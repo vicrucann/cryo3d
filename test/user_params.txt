@@ -1,0 +1,6 @@
+var5	0
+var3	0.9
+var1	100
+var2	This is longer than a word string
+var10	NaN
+var11	NaN
