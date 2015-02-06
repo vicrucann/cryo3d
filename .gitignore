@@ -1,3 +1,6 @@
 # Ignore any newly generated .mat and *.mrc files so that only source files are tracked
 *.mat
 *.mrc
+
+# Ignore any temporary files
+*.asv
