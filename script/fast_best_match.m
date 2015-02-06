@@ -6,7 +6,7 @@
 %% Configure parameters
 
 addpath(fullfile(cd, '../src/best_match'));
-db0 = fullfile(cd, '../samples/db-test');
+db0 = fullfile(cd, '../../sample-db'); % or chose your own database
 addpath(db0);
 pathout = [db0 '/'];
 
