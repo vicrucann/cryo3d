@@ -1,0 +1,70 @@
+=================================
+
+The main workflow:
+
+I. Input (reference model), RELION file format -> Pre-processing
+	- Sub-sampling
+	- CTF correction
+	- Normalization (intensity based)
+	- Outlier detection
+	- Precomputing the PCA images as an intermediate result (can also be a part of cache)
+
+II. Best match alignment (Nicha's code)
+
+III. 3d PCA (to visualize non-rigidity)
+	- EM
+	- Yunho, Hemant
+	- -> cross-validation
+
+IV. Visualization
+
+V. Post-processing
+
+=================================
+
+User input / output for preprocessing, 3 independent steps:
+
+1. Input as .mrc images and CTF classes with .txt file deformations; output CTF classes (images) and array of indices - together as a single .mat file. The script should cluster the CTFs and display them to the user; if CTF centers look OK, then proceed to writing everything to .m file.
+
+2. Input as a reference volume (.mrc file) which is processed by low-pass filter; output as an  initial volume, .mrc file. There will be some input number parameters as well which are read from command line.
+
+3. Input is a number (sampling angle), or could be coordinate axes from a different programm; output is projection coordinates as .mat file.
+
+4. Downsampling script: for images, resolution of mrc; might not be used for every database.
+
+=================================
+
+Data organization:
+
+Data-folder (might be located at another machine)
+|__db1 : *.mrc, *.m
+|__db2
+|__...
+
+Code
+|__src
+   |__pre-processing
+   |__best_match
+   |__post-processing
+   |__visualization?
+|__scripts : script1.m, script2.m, script3.m
+|__README-file
+
+=================================
+
+Questions:
+
+1. Single config file for all the steps or different config files for each step; or .m script that calls for everything and contains all the parameters.
+
+=================================
+
+Features:
+
+- Figure: on / off
+- Log file for each step
+- Normalization: on / off
+- Default of provided parameters (e.g., config file)
+- Saving intermediate results (cache organization)
+- Same interface for all components
+- Stats collection (e.g. running time, memory)
+- Producing intermediate results (e.g. debug / run modes)
