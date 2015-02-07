@@ -1,0 +1,26 @@
+README instructions will be located here.
+
+The project structure: 
+/doc : contains project description and structure
+/script : *.m scripts of the pipeline
+/src : *.m functions, arranged by the different pipeline step, e.g., preprocessing, best_match, etc; mrc folder contains function to read-write *.mrc files
+/test : temporal functions that are under development
+
+========================
+
+Basic commands of the source control git:
+
+To copy this software to your local machine, use cygwin or similar (mobaXterm, putty, git bash...). Use the following command lines:
+
+> git clone username@172.23.5.77:/usr/local/cryo3d/cryo3d.git
+> cd cryo3d
+
+In order to commit changes to server, use the following lines:
+
+> git commit -a -m 'Message on the changes you have made'
+> git push origin master
+
+In order to synchronize your version with the newer version from the server:
+
+> git pull
+
