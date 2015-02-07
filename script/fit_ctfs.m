@@ -2,6 +2,7 @@
 
 %%
 addpath(fullfile(cd, '../src/preprocessing'));
+addpath(fullfile(cd, '../src/mrc'));
 
 %% Data Params (Ideally, would only need paramfile, stackfile as input)
 volt = 300; % in kV rlnVoltage 

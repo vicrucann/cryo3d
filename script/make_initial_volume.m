@@ -3,6 +3,7 @@
 %%
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/best_match'));
+addpath(fullfile(cd, '../src/mrc'));
 
 %% Parameters
 structfile = 'C:\Users\vicrucann\Home\server\sample-db\test_init_model.mrc';
