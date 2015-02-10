@@ -55,6 +55,7 @@ Code
 Questions:
 
 1. Single config file for all the steps or different config files for each step; or .m script that calls for everything and contains all the parameters.
+2. For the script files, the input parameters will be changes each time by user or they should be turned into functions so that the params are passed as function parameters?
 
 =================================
 
