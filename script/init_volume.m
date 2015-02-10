@@ -34,6 +34,6 @@ end
 
 %% Save volume
 disp('Save initial volume');
-savefile = [structfile '_lpf_' num2str(lpf) 'A'];
+savefile = [structfile '_lpf_' num2str(lpf) 'A.mrc'];
 writeMRC(structure,voxelsize,savefile);
 passed = 1;
