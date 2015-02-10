@@ -1,20 +1,32 @@
-% Script for pre-processing the particle images, including phase flipping,
+% Function for pre-processing the particle images, including phase flipping,
 % prewhitening, and normalizing the intensities to have 0 mean, 1 std dev
 
 % Nicha C. Dvornek 02/2015
 
-%%
+function passed = preprocess_images(stackfile, ctffile, npsfile, downsample, pwflag, pfflag, Apix)
+% stackfile = 'G:\db-frank\stack_ds4.mrc';
+%ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
+%npsfile = 'G:\db-frank\NPS.txt';
+
+passed = 0;
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
 %% Data and Params
-Apix = 1.045; % pixel size of micrograph in Angstroms
-stackfile = 'G:\db-frank\stack_ds4.mrc';
-ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
-npsfile = 'G:\db-frank\NPS.txt';
-pfflag = 1; % Flag for whether or not to phase flip the images
-pwflag = 1; % Flag for whether or not to prewhiten the images
-downsample = 2; % Factor by which to downsample
+if (nargin < 7)
+    Apix = 1.045; % pixel size of micrograph in Angstroms
+end
+if (nargin < 6)
+    pfflag = 1; % Flag for whether or not to phase flip the images
+end
+if (nargin < 5)
+    pwflag = 1; % Flag for whether or not to prewhiten the images
+end
+if (nargin < 4)
+    downsample = 2; % Factor by which to downsample
+end
+ 
+
 %% Load things
 
 disp('Loading CTF info, NPS info, and image stack');
@@ -122,7 +134,7 @@ if downsample > 1
     end
     noisyims = zeros(newimgSx,newimgSx,size(tempnoisyims,3),'single');
     for i = 1:size(noisyims,3)
-        temp = DownsampleGeneral(tempnoisyims,newimgSx,1);
+        temp = DownsampleGeneral(tempnoisyims(:,:,i),newimgSx,1);
         noisyims(:,:,i) = (temp - mean(temp(:))) ./ std(temp(:));
     end
     clear tempnoisyims temp
@@ -144,3 +156,4 @@ if downsample > 1
 end
 savefile = [savefile '_norm.mrc'];
 writeMRC(noisyims,Apixstack,savefile);
+passed = 1;

@@ -1,26 +1,30 @@
-% Script for running fast best match method using subspace approximations
+% Function for running fast best match method using subspace approximations
 
 % Created by Nicha C. Dvornek, 09/2014
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function passed = best_match(dbpath, configfile)
+% input parameters are database path and config file path
 
 %% Configure parameters
 
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));
-db0 = fullfile(cd, '../../sample-db'); % or chose your own database
+db0 = dbpath; %fullfile(cd, '../../sample-db'); % or chose your own database
 addpath(db0);
 pathout = [db0 '/'];
 
 if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
     delete(gcp('nocreate'));
 end
+
 parpool;
 
 % Stuff for timing
 totaltime = tic;
 
 % Set up - user parameters
-configfile = 'fast_best_match_config.txt';
+%configfile = 'fast_best_match_config.txt';
 [imfile,imvar,imreconfile,imreconvar,initprojfile,maxmem,numthreads,...
     dispflag,substep,reconhalf,reconstartind,normprojint,numruns,...
     maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,...
@@ -456,3 +460,4 @@ if alignims
     aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
     save([pathout savename],'-append','aligned_ims');
 end
+passed = 1;

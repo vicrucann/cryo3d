@@ -1,14 +1,16 @@
-% Script to make an initial 3D volume from a reference volume
+% Function to make an initial 3D volume from a reference volume
+function passed = init_volume(structfile, lpf, sigma)
 
+passed = 0;
 %%
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));
 
-%% Parameters
-structfile = 'C:\Users\vicrucann\Home\server\sample-db\test_init_model.mrc';
-lpf = 60;
-sigma = 1;
+%% Parameters, example:
+% structfile = 'C:\Users\vicrucann\Home\server\sample-db\test_init_model.mrc';
+% lpf = 60;
+% sigma = 1;
 
 %% Load
 disp('Load reference structure');
@@ -34,3 +36,4 @@ end
 disp('Save initial volume');
 savefile = [structfile '_lpf_' num2str(lpf) 'A'];
 writeMRC(structure,voxelsize,savefile);
+passed = 1;

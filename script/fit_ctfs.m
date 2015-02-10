@@ -1,4 +1,20 @@
-% Script to cluster and fit ctfs to the data
+% function to cluster and fit ctfs to the data
+% minimal input parameters, example:
+% paramfile = 'G:\db-frank\Rotated70swithEFGparticle.star';
+% stackfile = 'G:\db-frank\stack_ds4.mrc';
+function passed = fit_ctfs(paramfile, stackfile, num_clusters, fitflag, saveflag)
+
+passed = 0;
+if (nargin < 5)
+    saveflag = 1;
+end
+if (nargin < 4)
+    fitflag = 1;
+end
+if (nargin < 3)
+    num_clusters = 5;
+end
+
 
 %%
 addpath(fullfile(cd, '../src/preprocessing'));
@@ -8,13 +24,9 @@ addpath(fullfile(cd, '../src/mrc'));
 volt = 300; % in kV rlnVoltage 
 ampcont = 0.1; % rlnAmplitudeContrast 
 Cs = 0.0; % in mm rlnSphericalAberration 
-paramfile = 'G:\db-frank\Rotated70swithEFGparticle.star';
-stackfile = 'G:\db-frank\stack_ds4.mrc';
 
 %% Preprocessing Params
-K = 5; % num ctf clusters
-fitflag = 1; % flag for whether to run ctffit2 (1), or whether to just use k-means clusters (0)
-saveflag = 1;
+K = num_clusters; % num ctf clusters
 
 %% CTF CLUSTERING
 
@@ -152,3 +164,5 @@ if saveflag
     savename = [stackfile(1:end-4) '_' num2str(K) 'ctfs' ];
     save(savename,'ctfs','ctfParams','ctfinds');
 end
+
+passed = 1;
