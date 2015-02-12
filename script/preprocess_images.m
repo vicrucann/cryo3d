@@ -4,7 +4,7 @@
 % Nicha C. Dvornek 02/2015
 
 function passed = preprocess_images(stackfile, ctffile, npsfile, downsample, pwflag, pfflag, Apix)
-% stackfile = 'G:\db-frank\stack_ds4.mrc';
+% stackfile = 'G:\db-frank\stack_ds4.mrc'; % examples
 %ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
 %npsfile = 'G:\db-frank\NPS.txt';
 
