@@ -2,6 +2,7 @@
 % minimal input parameters, example:
 % paramfile = 'G:\db-frank\Rotated70swithEFGparticle.star';
 % stackfile = 'G:\db-frank\stack_ds4.mrc';
+% test
 function passed = fit_ctfs(paramfile, stackfile, num_clusters, fitflag, saveflag)
 
 passed = 0;
