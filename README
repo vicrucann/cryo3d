@@ -10,7 +10,7 @@ The project structure:
 
 Basic commands of the source control git:
 
-To copy this software to your local machine, use cygwin or similar (mobaXterm, putty, git bash...). Use the following command lines:
+To copy this software to your local machine, use cygwin or similar (mobaXterm, putty, git-msc...). Use the following command lines:
 
 > git clone username@172.23.5.77:/usr/local/cryo3d/cryo3d.git
 > cd cryo3d
