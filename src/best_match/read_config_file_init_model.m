@@ -1,6 +1,6 @@
 % Function to read config file for making initial model
 
-function [structfile,sampdeg,coordfile,ctffile,ctfvar,savename,downsample,pf,addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(filename)
+function [structfile,sampdeg,coordfile,ctffile,savename,pf,addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(filename)
 
 fileID = fopen(filename);
 if fileID < 0
@@ -21,7 +21,7 @@ ind = find(strcmp(vars,'structfile'));
 if isempty(ind)
     ind = find(strcmp(vars,'initprojfile'));
     if isempty(ind)
-        disp('Error: No image stack specified (imfile)');
+        disp('Error: No initial structure specified (structfile)');
         return
     else
         structfile = C{2}{ind};
@@ -55,25 +55,11 @@ else
     ctffile = C{2}{ind};
 end
 
-ind = find(strcmp(vars,'ctfvar'));
-if isempty(ind)
-    ctfvar = '';
-else
-    ctfvar = C{2}{ind};
-end
-
 ind = find(strcmp(vars,'savename'));
 if isempty(ind)
     savename = structfile(1:end-4);
 else
     savename = C{2}{ind};
-end
-
-ind = find(strcmp(vars,'downsample'));
-if isempty(ind)
-    downsample = 1;
-else
-    downsample = str2double(C{2}{ind});
 end
 
 ind = find(strcmp(vars,'pf'));

@@ -1,4 +1,4 @@
-function [imfile,imreconfile,initprojfile,maxmem,numthreads,dispflag,substep,reconhalf,reconstartind,normprojint,numruns,maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,convtol,f,savemrc,alignims] = read_config_file(filename)
+function [imfile,imreconfile,maxmem,numthreads,dispflag,substep,reconhalf,reconstartind,normprojint,numruns,maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,convtol,f,alignims] = read_config_file(filename)
 
 fileID = fopen(filename);
 if fileID < 0
@@ -28,18 +28,6 @@ if isempty(ind)
     imreconfile = imfile;
 else
     imreconfile = C{2}{ind};
-end
-
-ind = find(strcmp(vars,'initprojfile'));
-if isempty(ind)
-    ind2 = find(strcmp(vars,'structfile'));
-    if isempty(ind2)
-        disp('Error: No initial structure/projections file specified (initprojfile or structfile)');
-        return
-    end
-    initprojfile = C{2}{ind2};
-else
-    initprojfile = C{2}{ind};
 end
 
 ind = find(strcmp(vars,'maxmem'));
@@ -161,13 +149,6 @@ if isempty(ind)
     f = 0.0001;
 else
     f = str2double(C{2}{ind});
-end
-
-ind = find(strcmp(vars,'savemrc'));
-if isempty(ind)
-    savemrc = 1;
-else
-    savemrc = str2double(C{2}{ind});
 end
 
 ind = find(strcmp(vars,'alignims'));
