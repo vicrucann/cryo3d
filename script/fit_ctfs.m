@@ -60,6 +60,8 @@ plot(C(:,1),C(:,2),'ks','LineWidth',2);
 set(gca,'XMinorTick','on');
 set(gca,'yMinorTick','on');
 grid on;
+xlabel('rlnDefocusU (um)');
+ylabel('rlnDefocusV (um)');
 
 % Visually select images close to clusters.
 cluDist = 2.0e9;
