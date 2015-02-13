@@ -3,14 +3,17 @@
 % paramfile = 'G:\db-frank\Rotated70swithEFGparticle.star';
 % stackfile = 'G:\db-frank\stack_ds4.mrc';
 % test
-function passed = fit_ctfs(paramfile, stackfile, num_clusters, fitflag, saveflag)
+function passed = fit_ctfs(paramfile, stackfile, num_clusters, ds, fitflag, saveflag)
 
 passed = 0;
-if (nargin < 5)
+if (nargin < 6)
     saveflag = 1;
 end
-if (nargin < 4)
+if (nargin < 5)
     fitflag = 1;
+end
+if (nargin < 4)
+    ds = 1;
 end
 if (nargin < 3)
     num_clusters = 5;
@@ -127,6 +130,7 @@ if fitflag  % Fit CTF parameters to the images
         figure; montageHandle = montage(reshape(singleSet(:,:,randomIdx(1:numForCTFfit)),[imgSx, imgSx, 1, numForCTFfit]),'Size',[montageSx montageSx],'DisplayRange',[]);
         singleMontage = getimage(montageHandle);
         close
+        cleare singleSet
 
         % Run CTFfit
         fprintf('  Running ctfit2...');
@@ -159,12 +163,22 @@ end
 %% WRITE FILES OUT
 
 if saveflag
+    if ds > 1
+        imgSx = floor(imgSx/ds);
+        if mod(imgSx,2) ~= 0
+            imgSx = imgSx + 1;
+        end
+        Apix = Apix* s.nx / imgSx;
+    end
     ctfs = zeros(imgSx,imgSx,K,'single');
     ind = 1;
     for i = 1:K
         ctfs(:,:,i) = CTF(imgSx,Apix,ctfParams{i,1});
     end
-    savename = [stackfile(1:end-4) '_' num2str(K) 'ctfs' ];
+    savename = [stackfile(1:strfind(imfile,'.')-1) '_' num2str(K) 'ctfs' ];
+    if ds > 1
+        savename = [savename '_ds' num2str(ds)];
+    end
     save(savename,'ctfs','ctfParams','ctfinds');
 end
 
