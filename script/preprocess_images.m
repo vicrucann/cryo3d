@@ -4,25 +4,27 @@
 % Nicha C. Dvornek 02/2015
 
 % Input parameters, example:
-% stackfile = 'G:\db-frank\stack_ds4.mrc'; % examples
-% ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
-% npsfile = 'G:\db-frank\NPS.txt';
-% Apix = 1.045; % pixel size of micrograph in Angstroms
+% 1. pathout - user's working directory, all the intermediates and results
+% will be saved there, pathout = 'G:\workspace\';
+% 2. stackfile - *.mrc file, stackfile = 'G:\db-frank\stack_ds4.mrc';
+% 3. ctffile = *.mat file with clustering info, ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
+% 4. npsfile = normally NPS.txt file, npsfile = 'G:\db-frank\NPS.txt';
+% 5. Apix - pixel size of micrograph in Angstroms, Apix = 1.045;
 
-function passed = preprocess_images(stackfile, ctffile, npsfile, Apix, downsample, pwflag, pfflag)
+function passed = preprocess_images(pathout, stackfile, ctffile, npsfile, Apix, downsample, pwflag, pfflag)
 
 passed = 0;
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
 % Data and Params
-if (nargin < 7)
+if (nargin < 8)
     pfflag = 1; % Flag for whether or not to phase flip the images
 end
-if (nargin < 6)
+if (nargin < 7)
     pwflag = 1; % Flag for whether or not to prewhiten the images
 end
-if (nargin < 5)
+if (nargin < 6)
     downsample = 1; % Factor by which to downsample
 end
  
@@ -143,8 +145,9 @@ end
 
 %% SAVE THE PROCESSED IMAGES
 
-f = strfind(stackfile,'.mrc');
-savefile = stackfile(1:f-1);
+f_type = strfind(stackfile,'.mrc');
+f_path = strfind(stackfile, '\');
+savefile = stackfile(max(f_path)+1:f_type-1); %stackfile(1:f-1);
 if pfflag
     savefile = [savefile '_pf'];
 end
@@ -152,8 +155,8 @@ if pwflag
     savefile = [savefile '_pw'];
 end
 if downsample > 1
-    saefile = [savefile '_ds' num2str(downsample)];
+    savefile = [savefile '_ds' num2str(downsample)];
 end
 savefile = [savefile '_norm.mrc'];
-writeMRC(noisyims,Apixstack,savefile);
+writeMRC(noisyims,Apixstack,[pathout savefile]);
 passed = 1;
