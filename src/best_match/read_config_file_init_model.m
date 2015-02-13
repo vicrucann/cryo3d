@@ -1,6 +1,6 @@
 % Function to read config file for making initial model
 
-function [structfile,sampdeg,coordfile,ctffile,ctfvar,savename,structvoxelres,downsample,lpf,pf,sigma,addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(filename)
+function [structfile,sampdeg,coordfile,ctffile,ctfvar,savename,downsample,pf,addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(filename)
 
 fileID = fopen(filename);
 if fileID < 0
@@ -69,13 +69,6 @@ else
     savename = C{2}{ind};
 end
 
-ind = find(strcmp(vars,'structvoxelres'));
-if isempty(ind)
-    structvoxelres = 0;
-else
-    structvoxelres = str2double(C{2}{ind});
-end
-
 ind = find(strcmp(vars,'downsample'));
 if isempty(ind)
     downsample = 1;
@@ -83,25 +76,11 @@ else
     downsample = str2double(C{2}{ind});
 end
 
-ind = find(strcmp(vars,'lpf'));
-if isempty(ind)
-    lpf = 0;
-else
-    lpf = str2double(C{2}{ind});
-end
-
 ind = find(strcmp(vars,'pf'));
 if isempty(ind)
     pf = 0;
 else
     pf = str2double(C{2}{ind});
-end
-    
-ind = find(strcmp(vars,'sigma'));
-if isempty(ind)
-    sigma = 1;
-else
-    sigma = str2double(C{2}{ind});
 end
 
 ind = find(strcmp(vars,'addnoise'));

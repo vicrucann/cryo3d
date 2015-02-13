@@ -6,14 +6,13 @@
 
 function savename = make_init_model(configfile, pathout)
 
-[structfile,sampdeg,coordfile,ctffile,ctfvar,savename,...
-    structvoxelres,ds,lpf,pf,sigma,addnoise,SNR_dB,...
-    pixfromedge] = read_config_file_init_model(configfile);
+[structfile,sampdeg,coordfile,ctffile,ctfvar,savename,ds,pf,...
+    addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(configfile);
 
 savename = [pathout savename];
 
 %% Load
-disp('Load structure');
+disp('Load structure, ctfs, and projection coordinates');
 if strcmp(structfile(end-2:end),'mat')
     load(structfile,'structure_final');
     if exist('structure_final','var')
@@ -37,6 +36,7 @@ else
     disp('Error: File extension must be .mat or .mrc');
     return
 end
+
 if isempty(ctffile)
     ctfs = ones(size(structure,1)/ds,size(structure,2)/ds);
 else
@@ -55,16 +55,6 @@ if sampdeg > 0
 else
     load(coordfile,'coord_axes');
 end
-
-%% Low pass and Resize
-disp('Low Pass Filtering and Resizing');
-if lpf > 0
-    structure = lpf_at_res_sigma(structure,structvoxelres,lpf,sigma);
-end
-n = size(ctfs,1);
-nm = size(structure,1);
-structure = Crop(DownsampleGeneral(structure,round(nm/ds)),n,0,0);
-prc = prctile(structure(structure~=0),90);
 
 %% Project
 disp('Projecting');
@@ -115,11 +105,6 @@ if ds ~= 1
     savename = [savename '_ds' num2str(ds)];
 end
 savename = [savename '_' num2str(size(coord_axes,2)) 'd'];
-if lpf == 0
-    savename = [savename '_nolpf'];
-else
-    savename = [savename '_lpf' num2str(lpf)];
-end
 if addnoise
     savename = [savename 'n'];
 end
