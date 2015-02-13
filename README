@@ -20,7 +20,14 @@ In order to commit changes to server, use the following lines:
 > git commit -a -m 'Message on the changes you have made'
 > git push origin master
 
+To add new file(-s) to the local git repository:
+
+> git add filename
+OR:
+> git add * // adding all the new files
+
 In order to synchronize your version with the newer version from the server:
 
 > git pull
+
 
