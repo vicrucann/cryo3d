@@ -25,7 +25,7 @@ totaltime = tic;
 
 % Set up - user parameters
 %configfile = 'fast_best_match_config.txt';
-[imfile,imvar,imreconfile,imreconvar,initprojfile,maxmem,numthreads,...
+[imfile,imreconfile,initprojfile,maxmem,numthreads,...
     dispflag,substep,reconhalf,reconstartind,normprojint,numruns,...
     maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,...
     convtol,f,savemrc,alignims] = read_config_file(configfile);
@@ -56,38 +56,39 @@ for run = 1:numruns
         disp('Loading images and setting up image subspace'); tic;
         
         % Check if pca of images already exists
-        vars = whos('-file',imfile);
-        if ~ismember('latentim',{vars.name})
+        pcafile = [imfile(1:strfind(imfile,'.')-1) '_pca.mat'];
+        if ~exist(pcafile,'file');
             % Do PCA
-            l = load(imfile,imvar);
-            data = single(l.(imvar));
-            clear l
             disp('PCA of images');
+            data = ReadMRC(imfile);
             data = reshape(data,[size(data,1)*size(data,2),size(data,3)])';  
             tic; [coeffim, scoreim, latentim] = pca(data); toc;
             clear data
-            save(imfile,'-append','coeffim','scoreim','latentim');
+            save(pcafile,'-v7.3','coeffim','scoreim','latentim');
         end
 
         % Determine subspace size of images
         if ~exist('latentim','var');
-            load(imfile,'latentim');
+            load(pcafile,'latentim');
         end
         latent_der = latentim(2:end) - latentim(1:end-1);
         latent_der2 = latent_der(2:end) - latent_der(1:end-1);
         latent_der2_avg = conv([1 1 1 ]./3,abs(latent_der2));
         numimcoeffs = find(abs(latent_der2_avg) < f,1) + 3;
+        if isempty(numimcoeffs)
+            numimcoeffs = length(latentim);
+        end
         clear latentim;
         disp(['Number of image basis elements: ' num2str(numimcoeffs)]);
         
         % Set up image subspace and coeffs
         if ~exist('coeffim','var')
-            load(imfile,'coeffim');
+            load(pcafile,'coeffim');
         end
         imbasis = coeffim(:,1:numimcoeffs-1); % Each col is numpixel-length basis elem
         clear coeffim
         if ~exist('scoreim','var')
-            load(imfile,'scoreim');
+            load(pcafile,'scoreim');
         end
         imcoeffs = [ones(size(scoreim,1),1), scoreim(:,1:numimcoeffs-1)]; % Each row is set of coeffs for an image
         clear scoreim;
@@ -365,9 +366,7 @@ for run = 1:numruns
     % Calculate reconstruction using final alignment params and original noisy images
     disp(' '); disp('Calc final estimate!'); disp('Update final projection templates'); tic;
     proj_last = proj_est;
-    l = load(imreconfile,imreconvar);
-    noisyims = single(l.(imreconvar));
-    clear l
+    noisyims = single(ReadMRC(imreconfile));
     
     %%%% FOR TESTING %%%%%%%%%%%%%%%%%%%%
     if substep > 0
@@ -421,8 +420,10 @@ for run = 1:numruns
     disp(['Total wall time: ' num2str(totaltime) ' seconds']);
     
     % Save
-    if strcmp(imfile(end-3:end),'.mat')
+    if strcmp(imfile(end-3:end),'.mat') || strcmp(imfile(end-3:end),'.mrc')
         savename = imfile(1:end-4);
+    elseif strcmp(imfile(end-4:end),'.mrcs')
+        savename = imfile(1:end-5);
     else
         savename = imfile;
     end
@@ -447,16 +448,13 @@ recon = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds
 %matlabpool close
 delete(gcp('nocreate'));
 save([pathout savename],'-append','recon');
-if savemrc
-    writeMRC(recon,savemrc,[pathout 'fbm_recon.mrc'])
-end
+[~,s] = ReadMRC(imreconfile,1,-1);
+writeMRC(recon,s.pixA,[pathout 'fbm_recon.mrc'])
 
 % Align images and save
 if alignims
     disp('Aligning images to best-matched projection and saving');
-    l = load(imreconfile,imreconvar);
-    noisyims = single(l.(imreconvar));
-    clear l
+    noisyims = single(ReadMRC(imreconfile));
     aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
     save([pathout savename],'-append','aligned_ims');
 end

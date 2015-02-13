@@ -30,8 +30,6 @@ if strcmp(structfile(end-2:end),'mat')
     end
 elseif strcmp(structfile(end-2:end),'mrc')
     structure = double(ReadMRC(structfile));
-    [~,h] = ReadMRC(structfile,1,-1);
-    structvoxelres = h.pixA;
 else
     disp('Error: File extension must be .mat or .mrc');
     return
