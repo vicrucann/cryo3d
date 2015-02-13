@@ -23,7 +23,7 @@ if (nargin < 5)
     pwflag = 1; % Flag for whether or not to prewhiten the images
 end
 if (nargin < 4)
-    downsample = 2; % Factor by which to downsample
+    downsample = 1; % Factor by which to downsample
 end
  
 
