@@ -1,17 +1,18 @@
 % Function to make an initial 3D volume from a reference volume
 % Parameters, example:
+% pathout = 'G:\workspace\';
 % structfile = 'C:\Users\vicrucann\Home\server\sample-db\test_init_model.mrc';
 
-function passed = init_volume(structfile, lpf, sigma, ds)
+function passed = init_volume(pathout, structfile, lpf, sigma, ds)
 
 passed = 0;
-if (nargin < 4)
+if (nargin < 5)
     ds = 1;
 end
-if (nargin < 3)
+if (nargin < 4)
     sigma = 1;
 end
-if (nargin < 2)
+if (nargin < 3)
     lpf = 60;
 end
 
@@ -52,9 +53,11 @@ end
 
 %% Save volume
 disp('Save initial volume');
-savefile = [structfile(1:end-4) '_lpf' num2str(lpf) 'A'];
+f_path = strfind(structfile, '\');
+savefile = structfile(max(f_path)+1:end);
+savefile = [savefile(1:end-4) '_lpf' num2str(lpf) 'A'];
 if ds > 1
     savefile = [savefile '_ds' num2str(ds)];
 end
-writeMRC(structure,voxelsize,[savefile '.mrc']);
+writeMRC(structure,voxelsize,[pathout savefile '.mrc']);
 passed = 1;
