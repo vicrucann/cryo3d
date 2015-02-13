@@ -46,16 +46,33 @@ nps = f.data(:,3);
 clear f
 
 % Load image stack
-[noisyims_raw, h] = ReadMRC(stackfile);
+[noisyims, h] = ReadMRC(stackfile);
 Apixstack = h.pixA;
-imgSx = size(noisyims_raw,1);
-noisyims = zeros(size(noisyims_raw),'single');
+imgSx = size(noisyims,1);
 
 % Make each image zero mean
-numim = size(noisyims_raw,3);
+numim = size(noisyims,3);
 for i = 1:numim
-    noisyims_raw(:,:,i) = noisyims_raw(:,:,i) - mean(reshape(noisyims_raw(:,:,i),imgSx^2,1));
+    noisyims(:,:,i) = noisyims(:,:,i) - mean(reshape(noisyims(:,:,i),imgSx^2,1));
 end
+
+% Downsample each image
+if downsample > 1
+    disp(['Downsample images by ' num2str(downsample)]);
+    imgSx = floor(imgSx/downsample);
+    if mod(imgSx,2) ~= 0
+        imgSx = imgSx + 1;
+    end
+    Apixstack = Apixstack * size(noisyims,1) / imgSx;
+    tempnoisyims = zeros(imgSx,imgSx,size(noisyims,3),'single');
+    for i = 1:size(noisyims,3)
+        temp = DownsampleGeneral(noisyims(:,:,i),imgSx,1);
+        tempnoisyims(:,:,i) = temp - mean(temp(:));
+    end
+    noisyims = tempnoisyims;
+    clear tempnoisyims temp
+end
+
 
 %% IMAGE PROCESSING
 
@@ -65,7 +82,7 @@ for i = 1:K
     fprintf('CTF CLUSTER: %d\n',i);
 
     % Get all images from stack
-    singleSet = noisyims_raw(:,:,ctfinds == i);
+    singleSet = noisyims(:,:,ctfinds == i);
     numinset = size(singleSet,3);
     montageSx = ceil(sqrt(size(singleSet,3)));
     montageHandle = montage(reshape(singleSet,[imgSx, imgSx, 1, numinset]),'Size',[montageSx montageSx],'DisplayRange',[]);
@@ -75,6 +92,8 @@ for i = 1:K
     
     % Do phase flipping if flag is set
     if pfflag 
+        fprintf('  Phase Flipping Images...');
+        
         % Create CTF image
         ctfImg = CTF(montageSx*imgSx,Apixstack,ctfParams{i,1});
 
@@ -84,7 +103,6 @@ for i = 1:K
         ctfImg           = ctfImg.*-1;
 
         % Phase flip 
-        fprintf('  Phase Flipping Images...');
         singleMontage = real(ifft2(ifftshift(ctfImg.*fftshift(fft2(singleMontage)))));
         clear ctfImg
         fprintf('DONE.\n');       
@@ -125,21 +143,6 @@ for i = 1:K
 
     fprintf('DONE.\n');
     
-end
-
-% Downsample each image
-if downsample > 1
-    tempnoisyims = noisyims;
-    newimgSx = floor(imgSx/downsample);
-    if mod(newimgSx,2) ~= 0
-        newimgSx = newimgSx + 1;
-    end
-    noisyims = zeros(newimgSx,newimgSx,size(tempnoisyims,3),'single');
-    for i = 1:size(noisyims,3)
-        temp = DownsampleGeneral(tempnoisyims(:,:,i),newimgSx,1);
-        noisyims(:,:,i) = (temp - mean(temp(:))) ./ std(temp(:));
-    end
-    clear tempnoisyims temp
 end
 
 
