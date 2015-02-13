@@ -24,11 +24,10 @@ parpool;
 totaltime = tic;
 
 % Set up - user parameters
-%configfile = 'fast_best_match_config.txt';
-[imfile,imreconfile,initprojfile,maxmem,numthreads,...
+[imfile,imreconfile,maxmem,numthreads,...
     dispflag,substep,reconhalf,reconstartind,normprojint,numruns,...
     maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,...
-    convtol,f,savemrc,alignims] = read_config_file(configfile);
+    convtol,f,alignims] = read_config_file(configfile);
 
 % Reconstruction parameters
 l_norm = 0.1;
@@ -60,7 +59,7 @@ for run = 1:numruns
         if ~exist(pcafile,'file');
             % Do PCA
             disp('PCA of images');
-            data = ReadMRC(imfile);
+            data = single(ReadMRC(imfile));
             data = reshape(data,[size(data,1)*size(data,2),size(data,3)])';  
             tic; [coeffim, scoreim, latentim] = pca(data); toc;
             clear data
@@ -76,6 +75,7 @@ for run = 1:numruns
         latent_der2_avg = conv([1 1 1 ]./3,abs(latent_der2));
         numimcoeffs = find(abs(latent_der2_avg) < f,1) + 3;
         if isempty(numimcoeffs)
+            disp('Warning: threshold too low - using full PCA basis');
             numimcoeffs = length(latentim);
         end
         clear latentim;
@@ -94,12 +94,11 @@ for run = 1:numruns
         clear scoreim;
         
         % Load images/ctf indices and put in mean vector into subspace
-        load(imfile,'ctfinds');
-        l = load(imfile,imvar);
-        noisyims = single(l.(imvar));
+        load(ctffile,'ctfinds');
+        noisyims = single(ReadMRC(imfile));
         meanim = mean(noisyims,3);
         imbasis = [meanim(:), imbasis];
-        clear l meanim;
+        clear meanim;
         
         %%%% FOR TESTING %%%%%%%%%%%%%%%%%%%%
         if substep > 0
@@ -122,35 +121,30 @@ for run = 1:numruns
     
     disp('Loading initial structure and templates'); tic;
     if run > 1
-        ps_1x = proj_struct;
         clear proj_struct
         load(initprojfile,'coeffproj','scoreproj','latentproj','maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
     else    
-        % Check if all initial model parameters exist
-        vars = whos('-file',initprojfile);
-        if ~ismember('data_axes',{vars.name})
-            % Get the initial model parameters
-            initprojfile = make_init_model(configfile, pathout);
-        end
+        % Get the initial model parameters
+        initprojfile = make_init_model(configfile, pathout);
+        load(initprojfile,'maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
+
         % Rescale projection intensities to match images
         if normprojint
-            load(initprojfile,'maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
-            disp('Rescaling projection intensities and initialize basis');
-            proj_struct = rescale_proj_ints(proj_struct,noisyims);
-            disp('pca');
-            data = reshape(proj_struct,[size(proj_struct,1)*size(proj_struct,2),size(proj_struct,3)])';
-            pcatic = tic; [coeffproj, scoreproj, latentproj] = princomp(data); toc(pcatic);
-            clear data;
-        else
-            % no rescaling
-            load(initprojfile,'coeffproj','scoreproj','latentproj','maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
+            disp('Rescaling projection intensities');
+            proj_struct = rescale_proj_ints(proj_struct,noisyims);  
         end
+        
+        disp('PCA of initial projections');
+        data = reshape(proj_struct,[size(proj_struct,1)*size(proj_struct,2),size(proj_struct,3)])';
+        pcatic = tic; [coeffproj, scoreproj, latentproj] = princomp(data); toc(pcatic);
+        clear data;
     end
     if (~exist('structmask','var'))
         structmask = ones(size(structure));
     end
     
     % Set up projection subspace and coeffs
+    disp('Setting up initial projection subspace');
     latent_der = latentproj(2:end) - latentproj(1:end-1);
     latent_der2 = latent_der(2:end) - latent_der(1:end-1);
     latent_der2_avg = conv([1 1 1 ]./3,abs(latent_der2));
@@ -191,12 +185,10 @@ for run = 1:numruns
     nummaskpix = sum(maskim(:));
     numctf = max(ctfinds);
     iminds = (1:numim)';
-    projnorms = zeros(numproj,1);
     onesprojcoeff = ones(numprojcoeffs,1,'int8');
     onesproj = ones(numproj,1,'int8');
     proj_est = reshape(projbasis*projcoeffs'.*maskimcol(:,onesproj),[numpixsqrt,numpixsqrt,numproj]);
     projbasis = projbasis .* maskimcol(:,onesprojcoeff);
-    eps = 1e-20;
     
     % Start pool
     %if numthreads > 0 % matlab2013
@@ -276,8 +268,7 @@ for run = 1:numruns
         disp('Get number of images aligned to each template'); tic;
         scaleperproj = zeros(numproj,1);
         for j = 1:numproj
-            inds = find(projinds == j);
-            scaleperproj(j) = sum(scales(inds).^2);
+            scaleperproj(j) = sum(scales(projinds == j).^2);
         end
         toc;
         
@@ -297,6 +288,7 @@ for run = 1:numruns
         projcoeffs = double( ( (projbasis'*projbasis)\(projbasis'*(sigma2_2*sumalignedim + sigma1_2*reshape(proj_struct,[numpix,numproj])))./...
             (sigma2_2*scaleperproj(:,onesprojcoeff)' + sigma1_2))' );
         clear sumalignedim proj_struct;
+        toc;
         
         % Update structure
         disp('Update templates and structure'); pause(0.05); tic;
@@ -364,8 +356,7 @@ for run = 1:numruns
     end
     
     % Calculate reconstruction using final alignment params and original noisy images
-    disp(' '); disp('Calc final estimate!'); disp('Update final projection templates'); tic;
-    proj_last = proj_est;
+    disp(' '); disp('Calc final estimate!'); disp('Load original particle images'); tic;
     noisyims = single(ReadMRC(imreconfile));
     
     %%%% FOR TESTING %%%%%%%%%%%%%%%%%%%%
@@ -379,11 +370,12 @@ for run = 1:numruns
         noisyims = noisyims(:,:,reconstartind:2:end);
         numim = size(noisyims,3);
     end
+    toc; 
     
     % Update projection templates using original images
+    disp('Update final projection templates'); tic;
     noisyims_g = gpuArray(noisyims);
     clear noisyims
-    disp('Calc image weights'); tic;
     weights = zeros(numim,1);
     for j = 1:numproj
         inds = find(projinds == j);
@@ -392,6 +384,7 @@ for run = 1:numruns
         end
     end
     proj_est = update_templates2(noisyims_g,iminds,projinds,rotinds,transinds,weights,rots,trans,numpixsqrt,numim,numproj);
+    toc;
     
     % Calculate final reconstruction with original images
     disp('Final reconstruction'); tic;
@@ -414,9 +407,9 @@ for run = 1:numruns
         
     % Display stats summary
     totaltime = toc(totaltime);
-    disp(['Average time per serial iteration: ' num2str(mean(itertimes)) ' seconds']);
-    disp(['Average time per serial SSD calc: ' num2str(mean(ssdtimes)) ' seconds']);
-    disp(['Average wall time per iteration: ' num2str(mean(wallitertimes)) ' seconds']);
+    disp(['Average time per serial iteration: ' num2str(mean(itertimes(itertimes~=0))) ' seconds']);
+    disp(['Average time per serial SSD calc: ' num2str(mean(ssdtimes(ssdtimes~=0))) ' seconds']);
+    disp(['Average wall time per iteration: ' num2str(mean(wallitertimes(wallitertimes~=0))) ' seconds']);
     disp(['Total wall time: ' num2str(totaltime) ' seconds']);
     
     % Save
@@ -456,6 +449,6 @@ if alignims
     disp('Aligning images to best-matched projection and saving');
     noisyims = single(ReadMRC(imreconfile));
     aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
-    save([pathout savename],'-append','aligned_ims');
+    writeMRC(aligned_ims,s.pixA,'fbm_aligned_ims.mrc');
 end
 passed = 1;
