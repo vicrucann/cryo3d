@@ -6,7 +6,7 @@
 
 function savename = make_init_model(configfile, pathout)
 
-[structfile,sampdeg,coordfile,ctffile,ctfvar,savename,ds,pf,...
+[structfile,sampdeg,coordfile,ctffile,savename,pf,...
     addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(configfile);
 
 savename = [pathout savename];
@@ -36,16 +36,10 @@ else
 end
 
 if isempty(ctffile)
-    ctfs = ones(size(structure,1)/ds,size(structure,2)/ds);
+    ctfs = ones(size(structure,1),size(structure,2));
 else
-    if ~isempty(ctfvar)
-        s = load(ctffile,ctfvar);
-        ctfs = double(s.(ctfvar));
-    else
-        s = load(ctffile);
-        varname = fieldnames(s);
-        structure = double(s.(varname{1}));
-    end
+    load(ctffile,'ctfs');
+    ctfs = double(ctfs);
 end
 
 if sampdeg > 0
@@ -56,12 +50,9 @@ end
 
 %% Project
 disp('Projecting');
-numdir = size(coord_axes,2);
 if pf
     ctfs = abs(ctfs);
 end
-numctfs = size(ctfs,3);
-imsize = size(structure,1);
 
 %if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
 %    delete(gcp('nocreate'));
@@ -79,9 +70,7 @@ structure=structure.*mask.bin;
 
 % fourier -> spatial
 numproj = size(proj,3);
-numpix = size(proj,1) * size(proj,2);
 proj_struct = zeros(size(proj));
-data = zeros(numproj,numpix);
 maskim = mask.bin(:,:,ceil(end/2));
 for j = 1:numproj
     if addnoise
@@ -90,28 +79,20 @@ for j = 1:numproj
         temp = real(ifft2(ifftshift(proj(:,:,j)))).*maskim;
     end
     proj_struct(:,:,j) = temp;
-    data(j,:) = temp(:);
 end
 
 disp('Saving');
 if isempty(ctffile)
     savename = [savename '_noctf'];
 else
-    savename = [savename '_' num2str(numctfs) 'ctf'];
-end
-if ds ~= 1
-    savename = [savename '_ds' num2str(ds)];
+    savename = [savename '_' num2str(size(ctfs,3)) 'ctf'];
 end
 savename = [savename '_' num2str(size(coord_axes,2)) 'd'];
 if addnoise
-    savename = [savename 'n'];
+    savename = [savename '_' num2str(SNRdB) 'dB'];
 end
 if pf
     savename = [savename '_pf'];
 end
 savename = [savename '.mat'];
-if exist(savename,'file')
-    save(savename,'-append','maskim','ctfs','data_axes','coord_axes','mask','structure','proj_struct');
-else
-    save(savename,'-v7.3','maskim','ctfs','data_axes','coord_axes','mask','structure','proj_struct');
-end
+save(savename,'-v7.3','maskim','ctfs','data_axes','coord_axes','mask','structure','proj_struct');
