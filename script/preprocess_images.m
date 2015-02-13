@@ -3,26 +3,26 @@
 
 % Nicha C. Dvornek 02/2015
 
-function passed = preprocess_images(stackfile, ctffile, npsfile, downsample, pwflag, pfflag, Apix)
+% Input parameters, example:
 % stackfile = 'G:\db-frank\stack_ds4.mrc'; % examples
-%ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
-%npsfile = 'G:\db-frank\NPS.txt';
+% ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
+% npsfile = 'G:\db-frank\NPS.txt';
+% Apix = 1.045; % pixel size of micrograph in Angstroms
+
+function passed = preprocess_images(stackfile, ctffile, npsfile, Apix, downsample, pwflag, pfflag)
 
 passed = 0;
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
-%% Data and Params
+% Data and Params
 if (nargin < 7)
-    Apix = 1.045; % pixel size of micrograph in Angstroms
-end
-if (nargin < 6)
     pfflag = 1; % Flag for whether or not to phase flip the images
 end
-if (nargin < 5)
+if (nargin < 6)
     pwflag = 1; % Flag for whether or not to prewhiten the images
 end
-if (nargin < 4)
+if (nargin < 5)
     downsample = 1; % Factor by which to downsample
 end
  
