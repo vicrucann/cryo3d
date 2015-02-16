@@ -1,7 +1,11 @@
 % Function to make an initial 3D volume from a reference volume
-% Parameters, example:
+% Required parameters, example:
 % pathout = 'G:\workspace\';
 % structfile = 'C:\Users\vicrucann\Home\server\sample-db\test_init_model.mrc';
+% lpf = 60; Cutoff for low-pass filter in Angstrom
+% Optional parameters, example:
+% sigma = 1; Controls width of Gaussian edge for low-pass filter
+% ds = 2; Factor by which to downsample the volume
 
 function passed = init_volume(pathout, structfile, lpf, sigma, ds)
 
@@ -13,7 +17,8 @@ if (nargin < 4)
     sigma = 1;
 end
 if (nargin < 3)
-    lpf = 60;
+    disp('ERROR: Not enough input parameters');
+    return;
 end
 
 %% Access the necessary functions

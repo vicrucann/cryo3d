@@ -3,6 +3,12 @@
 % pathout = 'G:\workspace\';
 % paramfile = 'G:\db-frank\Rotated70swithEFGparticle.star';
 % stackfile = 'G:\db-frank\stack_ds4.mrc';
+% optional parameters, example:
+% num_clusters = 5; Number of defocus classes
+% ds = 2; Factor by which to downsample
+% fitflag = 1; Flag (0/1) to run ctfit2 to get ctf parameters
+% saveflag = 1; Flag (0/1) to save the ctf parameters and images in .mat
+
 function passed = fit_ctfs(pathout, paramfile, stackfile, num_clusters, ds, fitflag, saveflag)
 
 passed = 0;
@@ -10,7 +16,7 @@ if (nargin < 7)
     saveflag = 1;
 end
 if (nargin < 6)
-    fitflag = 1;
+    fitflag = 0;
 end
 if (nargin < 5)
     ds = 1;
@@ -18,7 +24,10 @@ end
 if (nargin < 4)
     num_clusters = 5;
 end
-
+if (nargin < 3)
+    disp('ERROR: Not enough input parameters');
+    return;
+end
 
 %%
 addpath(fullfile(cd, '../src/preprocessing'));
