@@ -175,7 +175,7 @@ if saveflag
     for i = 1:K
         ctfs(:,:,i) = CTF(imgSx,Apix,ctfParams{i,1});
     end
-    savename = [stackfile(1:strfind(imfile,'.')-1) '_' num2str(K) 'ctfs' ];
+    savename = [stackfile(1:strfind(stackfile,'.')-1) '_' num2str(K) 'ctfs' ];
     if ds > 1
         savename = [savename '_ds' num2str(ds)];
     end
