@@ -47,7 +47,7 @@ if ds > 1
         imgSx = imgSx + 1;
     end
     factor = size(structure,1) / imgSx;
-    structure = DownsampleGeneral(structure,imgSx,1);
+    structure = DownsampleGeneral(structure,imgSx);
     voxelsize = voxelsize*factor;
 end
 
