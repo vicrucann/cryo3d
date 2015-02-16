@@ -66,7 +66,7 @@ if downsample > 1
     Apixstack = Apixstack * size(noisyims,1) / imgSx;
     tempnoisyims = zeros(imgSx,imgSx,size(noisyims,3),'single');
     for i = 1:size(noisyims,3)
-        temp = DownsampleGeneral(noisyims(:,:,i),imgSx,1);
+        temp = DownsampleGeneral(noisyims(:,:,i),imgSx);
         tempnoisyims(:,:,i) = temp - mean(temp(:));
     end
     noisyims = tempnoisyims;
@@ -160,6 +160,6 @@ end
 if downsample > 1
     savefile = [savefile '_ds' num2str(downsample)];
 end
-savefile = [savefile '_norm.mrc'];
+savefile = [savefile '_norm.mrcs'];
 writeMRC(noisyims,Apixstack,[pathout savefile]);
 passed = 1;
