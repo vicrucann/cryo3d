@@ -3,7 +3,7 @@ function g=get_grad_with_ctf_par(x,mask_r,proj,data_axes,l_norm,l_smooth,ctfs)
 n_proj=size(proj,3);
 g=zeros(size(x));
 
-%if matlabpool('size') > 0
+% if matlabpool('size') > 0
 if (~isempty(gcp('nocreate')))
     if n_proj == size(ctfs,3)
         parfor i=1:n_proj,

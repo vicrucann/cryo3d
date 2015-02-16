@@ -9,7 +9,7 @@ function savename = make_init_model(configfile, pathout)
 [structfile,sampdeg,coordfile,ctffile,savename,pf,...
     addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(configfile);
 
-savename = [pathout savename];
+savename = [pathout '/' savename];
 
 %% Load
 disp('Load structure, ctfs, and projection coordinates');
