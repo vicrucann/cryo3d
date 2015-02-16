@@ -1,4 +1,4 @@
-function [imfile,imreconfile,maxmem,numthreads,dispflag,substep,reconhalf,reconstartind,normprojint,numruns,maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,convtol,f,alignims] = read_config_file(filename)
+function [imfile,imreconfile,ctffile,maxmem,numthreads,dispflag,substep,reconhalf,reconstartind,normprojint,numruns,maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,convtol,f,alignims] = read_config_file(filename)
 
 fileID = fopen(filename);
 if fileID < 0
@@ -28,6 +28,13 @@ if isempty(ind)
     imreconfile = imfile;
 else
     imreconfile = C{2}{ind};
+end
+
+ind = find(strcmp(vars,'ctffile'));
+if isempty(ind)
+    ctffile = '';
+else
+    ctffile = C{2}{ind};
 end
 
 ind = find(strcmp(vars,'maxmem'));

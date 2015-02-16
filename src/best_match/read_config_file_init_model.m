@@ -57,7 +57,11 @@ end
 
 ind = find(strcmp(vars,'savename'));
 if isempty(ind)
-    savename = structfile(1:end-4);
+    s = strfind(structfile,'\');
+    if isempty(s)
+        s = strfind(structfile,'/');
+    end
+    savename = structfile(s(end)+1:end-4);
 else
     savename = C{2}{ind};
 end

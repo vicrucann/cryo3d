@@ -14,17 +14,20 @@ db0 = dbpath; %fullfile(cd, '../../sample-db'); % or chose your own database
 addpath(db0);
 pathout = db0;
 
-if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
-    delete(gcp('nocreate'));
-end
+% if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
+%     delete(gcp('nocreate'));
+% end
+% 
+% parpool;
 
-parpool;
+%% testing on my machine
+matlabpool
 
 % Stuff for timing
 totaltime = tic;
 
 % Set up - user parameters
-[imfile,imreconfile,maxmem,numthreads,...
+[imfile,imreconfile,ctffile,maxmem,numthreads,...
     dispflag,substep,reconhalf,reconstartind,normprojint,numruns,...
     maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,...
     convtol,f,alignims] = read_config_file(configfile);
@@ -39,14 +42,14 @@ stop_lim = 0.03;
 %% Fast best match outer loop
 for run = 1:numruns
     
-    totaltime = tic;
+    runtime = tic;
     disp(' ');
     disp(['Run ' num2str(run)]);
     
     if run > 1
         reset(gpuDevice);
-        writefile = [pathout savename '_reinit.mat'];  
-        proj_init_from_file([pathout savename],initprojfile,writefile,0);
+        writefile = [pathout '/' savename '_reinit.mat'];  
+        proj_init_from_file([pathout '/' savename '.mat'],initprojfile,writefile,0);
         initprojfile = writefile;        
     end
     
@@ -94,8 +97,12 @@ for run = 1:numruns
         clear scoreim;
         
         % Load images/ctf indices and put in mean vector into subspace
-        load(ctffile,'ctfinds');
         noisyims = single(ReadMRC(imfile));
+        if isempty(ctffile)
+            ctfinds = ones(size(noisyims,3),1);
+        else
+            load(ctffile,'ctfinds');
+        end
         meanim = mean(noisyims,3);
         imbasis = [meanim(:), imbasis];
         clear meanim;
@@ -347,7 +354,7 @@ for run = 1:numruns
         
         if mod(n-1,1) == 0
             savename = ['run_' num2str(run) '_iter_' num2str(n)];
-            save([pathout savename],'-v7.3','structure','projbasis','projcoeffs','projinds','rotinds','transinds','scales','searchtrans','err');
+            save([pathout '/' savename],'-v7.3','structure','projbasis','projcoeffs','projinds','rotinds','transinds','scales','searchtrans','err');
         end
         if done == 1
             break;
@@ -406,19 +413,23 @@ for run = 1:numruns
     toc;
         
     % Display stats summary
-    totaltime = toc(totaltime);
+    runtime = toc(runtime);
     disp(['Average time per serial iteration: ' num2str(mean(itertimes(itertimes~=0))) ' seconds']);
     disp(['Average time per serial SSD calc: ' num2str(mean(ssdtimes(ssdtimes~=0))) ' seconds']);
     disp(['Average wall time per iteration: ' num2str(mean(wallitertimes(wallitertimes~=0))) ' seconds']);
-    disp(['Total wall time: ' num2str(totaltime) ' seconds']);
+    disp(['Total wall time: ' num2str(runtime) ' seconds']);
     
     % Save
+    s = strfind(imfile,'\');
+    if isempty(s)
+        s = strfind(imfile,'/');
+    end
     if strcmp(imfile(end-3:end),'.mat') || strcmp(imfile(end-3:end),'.mrc')
-        savename = imfile(1:end-4);
+        savename = imfile(s(end)+1:end-4);
     elseif strcmp(imfile(end-4:end),'.mrcs')
-        savename = imfile(1:end-5);
+        savename = imfile(s(end)+1:end-5);
     else
-        savename = imfile;
+        savename = imfile(s(end)+1:end);
     end
     savename = [savename '_fastbm_' num2str(numimcoeffs) '_' num2str(numprojcoeffs) '_' num2str(rotstep) 'd_' num2str(transmax) num2str(transdelta) num2str(transwidth) 't_' num2str(run) 'x'];
     if substep > 0
@@ -427,7 +438,7 @@ for run = 1:numruns
     if reconhalf
         savename = [savename '_h' num2str(reconstartind)];
     end
-    save([pathout savename],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','totaltime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','f','imfile','initprojfile','imreconfile','convtol','coord_axes');
+    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','f','imfile','initprojfile','imreconfile','convtol','coord_axes');
     
     % Some clean up
     clear structure_final structure proj_est proj_last
@@ -438,17 +449,20 @@ end
 disp('Reconstruct one more time with largest mask possible');
 mask = get_mask_struct_ncd([numpixsqrt numpixsqrt numpixsqrt],1); % reconstruct with largest mask possible
 recon = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds),ctfs(:,:,mod(keepinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
-%matlabpool close
-delete(gcp('nocreate'));
-save([pathout savename],'-append','recon');
-[~,s] = ReadMRC(imreconfile,1,-1);
-writeMRC(recon,s.pixA,[pathout 'fbm_recon.mrc'])
+matlabpool close
+% delete(gcp('nocreate'));
+save([pathout '/' savename],'-append','recon');
+[~,h] = ReadMRC(imreconfile,1,-1);
+writeMRC(recon,h.pixA,[pathout '/fbm_recon.mrc'])
 
 % Align images and save
 if alignims
     disp('Aligning images to best-matched projection and saving');
     noisyims = single(ReadMRC(imreconfile));
     aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
-    writeMRC(aligned_ims,s.pixA,'fbm_aligned_ims.mrc');
+    writeMRC(aligned_ims,h.pixA,[pathout '/fbm_aligned_ims.mrcs']);
 end
+
+disp(['Total wall time for best_match.m: ' num2str(toc(totaltime)/60/60) ' hrs']);
+
 passed = 1;
