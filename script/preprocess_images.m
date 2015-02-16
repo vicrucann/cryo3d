@@ -8,23 +8,26 @@
 % will be saved there, pathout = 'G:\workspace\';
 % 2. stackfile - *.mrc file, stackfile = 'G:\db-frank\stack_ds4.mrc';
 % 3. ctffile = *.mat file with clustering info, ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
-% 4. npsfile = normally NPS.txt file, npsfile = 'G:\db-frank\NPS.txt';
-% 5. Apix - pixel size of micrograph in Angstroms, Apix = 1.045;
+% 4. downsample = factor by which to downsample images, downsample = 2;
+% 5. pfflag = flag (0/1) to phase flip the images, pfflag = 1;
+% 6. pwflag = flag (0/1) to prewhiten images (input 7 and 8 required if pwflag = 1), pwflag = 1;
+% 7. npsfile = normally NPS.txt file, npsfile = 'G:\db-frank\NPS.txt';
+% 8. Apix - pixel size of micrograph for NPS data in Angstroms, Apix = 1.045;
 
-function passed = preprocess_images(pathout, stackfile, ctffile, npsfile, Apix, downsample, pwflag, pfflag)
+function passed = preprocess_images(pathout, stackfile, ctffile, downsample, pfflag, pwflag, npsfile, Apix)
 
 passed = 0;
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
 % Data and Params
-if (nargin < 8)
-    pfflag = 1; % Flag for whether or not to phase flip the images
-end
-if (nargin < 7)
-    pwflag = 1; % Flag for whether or not to prewhiten the images
-end
 if (nargin < 6)
+    pwflag = 0; % Flag for whether or not to prewhiten the images
+end
+if (nargin < 5)
+    pfflag = 0; % Flag for whether or not to phase flip the images
+end
+if (nargin < 4)
     downsample = 1; % Factor by which to downsample
 end
  
@@ -40,10 +43,12 @@ K = size(ctfParams,1);
 % Load NPS info
 % THIS IS HOW I READ IT IN FOR THE EXAMPLE FILE - NOT SURE IF THERE IS A
 % STANDARD FILE TYPE THAT IS TO BE READ IN
-f = importdata(npsfile);
-dqe_freq = f.data(:,1)/(2*Apix);
-nps = f.data(:,3);
-clear f
+if pwflag
+    f = importdata(npsfile);
+    dqe_freq = f.data(:,1)/(2*Apix);
+    nps = f.data(:,3);
+    clear f
+end
 
 % Load image stack
 [noisyims, h] = ReadMRC(stackfile);
@@ -151,14 +156,14 @@ end
 f_type = strfind(stackfile,'.mrc');
 f_path = strfind(stackfile, '\');
 savefile = stackfile(max(f_path)+1:f_type-1); %stackfile(1:f-1);
+if downsample > 1
+    savefile = [savefile '_ds' num2str(downsample)];
+end
 if pfflag
     savefile = [savefile '_pf'];
 end
 if pwflag
     savefile = [savefile '_pw'];
-end
-if downsample > 1
-    savefile = [savefile '_ds' num2str(downsample)];
 end
 savefile = [savefile '_norm.mrcs'];
 writeMRC(noisyims,Apixstack,[pathout savefile]);
