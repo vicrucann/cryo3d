@@ -1,5 +1,6 @@
-% Function for pre-processing the particle images, including phase flipping,
-% prewhitening, and normalizing the intensities to have 0 mean, 1 std dev
+% Function for pre-processing the particle images, including downsampling,
+% phase flipping, prewhitening, and normalizing the intensities to have
+% 0 mean, 1 std dev
 
 % Nicha C. Dvornek 02/2015
 
@@ -29,6 +30,10 @@ if (nargin < 5)
 end
 if (nargin < 4)
     downsample = 1; % Factor by which to downsample
+end
+if (nargin < 3)
+    disp('ERROR: Not enough input parameters');
+    return;
 end
  
 
