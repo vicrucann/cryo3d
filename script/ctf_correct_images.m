@@ -3,11 +3,12 @@
 % Code originally from Fred Sigworth
 % Modified by Nicha C. Dvornek, 02/2015
 
+% Parameter inputs, example:
+%stackfile = 'C:\Users\Nicha\Documents\Data\Frank_Data\Rotated70swithEFGparticle.mrcs';
+%paramfile = 'C:\Users\Nicha\Documents\Data\Frank_Data\Rotated70swithEFGparticle.star';
 
-%% Parameter inputs
-stackfile = 'C:\Users\Nicha\Documents\Data\Frank_Data\Rotated70swithEFGparticle.mrcs';
-paramfile = 'C:\Users\Nicha\Documents\Data\Frank_Data\Rotated70swithEFGparticle.star';
-
+function passed = ctf_correct_images(stackfile, paramfile)
+passed = 0;
 % WOULD BE NICE IF WE COULD READ THIS IN FROM THE .STAR FILE
 pixA=6.35/60765.550200*10000;  % pixel size in angstroms: rlnDetectorPixelSize / _rlnMagnification * 10000
 volt = 300; % _rlnVoltage
@@ -67,3 +68,4 @@ for i=1:nim
 end;
 
 writeMRC(filtImgs,s.pixA,[stackfile(1:strfind(imfile,'.')-1) '_ctf_corrected.mrcs']);
+passed = 1;
