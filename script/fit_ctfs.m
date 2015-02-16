@@ -175,11 +175,14 @@ if saveflag
     for i = 1:K
         ctfs(:,:,i) = CTF(imgSx,Apix,ctfParams{i,1});
     end
-    savename = [stackfile(1:strfind(stackfile,'.')-1) '_' num2str(K) 'ctfs' ];
+    %savename = [stackfile(1:strfind(stackfile,'.')-1) '_' num2str(K) 'ctfs' ];
+    f_type = strfind(stackfile,'.mrc');
+    f_path = strfind(stackfile, '\');
+    savename = stackfile(max(f_path)+1:f_type-1);
     if ds > 1
         savename = [savename '_ds' num2str(ds)];
     end
-    save(savename,'ctfs','ctfParams','ctfinds');
+    save([pathout savename],'ctfs','ctfParams','ctfinds');
 end
 
 passed = 1;
