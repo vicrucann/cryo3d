@@ -14,14 +14,14 @@ db0 = dbpath; %fullfile(cd, '../../sample-db'); % or chose your own database
 addpath(db0);
 pathout = db0;
 
-% if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
-%     delete(gcp('nocreate'));
-% end
-% 
-% parpool;
+if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
+    delete(gcp('nocreate'));
+end
+
+parpool;
 
 %% testing on my machine
-matlabpool
+% matlabpool
 
 % Stuff for timing
 totaltime = tic;
@@ -449,8 +449,8 @@ end
 disp('Reconstruct one more time with largest mask possible');
 mask = get_mask_struct_ncd([numpixsqrt numpixsqrt numpixsqrt],1); % reconstruct with largest mask possible
 recon = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds),ctfs(:,:,mod(keepinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
-matlabpool close
-% delete(gcp('nocreate'));
+% matlabpool close
+delete(gcp('nocreate'));
 save([pathout '/' savename],'-append','recon');
 [~,h] = ReadMRC(imreconfile,1,-1);
 writeMRC(recon,h.pixA,[pathout '/fbm_recon.mrc'])
