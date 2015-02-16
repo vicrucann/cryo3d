@@ -178,7 +178,7 @@ if saveflag
     %savename = [stackfile(1:strfind(stackfile,'.')-1) '_' num2str(K) 'ctfs' ];
     f_type = strfind(stackfile,'.mrc');
     f_path = strfind(stackfile, '\');
-    savename = stackfile(max(f_path)+1:f_type-1);
+    savename = [stackfile(max(f_path)+1:f_type-1) '_' num2str(K) 'ctfs'];
     if ds > 1
         savename = [savename '_ds' num2str(ds)];
     end
