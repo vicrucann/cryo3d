@@ -160,6 +160,9 @@ end
 
 f_type = strfind(stackfile,'.mrc');
 f_path = strfind(stackfile, '\');
+if (f_path == [])
+    f_path = strfind(stackfile, '/');
+end
 savefile = stackfile(max(f_path)+1:f_type-1); %stackfile(1:f-1);
 if downsample > 1
     savefile = [savefile '_ds' num2str(downsample)];
