@@ -1,7 +1,7 @@
 % Function to make an initial 3D volume from a reference volume
 % Required parameters, example:
 % pathout = 'G:\workspace\';
-% structfile = 'C:\Users\vicrucann\Home\server\sample-db\test_init_model.mrc';
+% structfile = 'G:\db-sample\test_init_model.mrc';
 % lpf = 60; Cutoff for low-pass filter in Angstrom
 % Optional parameters, example:
 % sigma = 1; Controls width of Gaussian edge for low-pass filter
