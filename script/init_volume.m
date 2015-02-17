@@ -60,7 +60,7 @@ end
 disp('Save initial volume');
 f_path = strfind(structfile, '\');
 if (isempty(f_path))
-    f_path = strfind(stackfile, '/');
+    f_path = strfind(structfile, '/');
 end
 savefile = structfile(max(f_path)+1:end);
 savefile = [savefile(1:end-4) '_lpf' num2str(lpf) 'A'];

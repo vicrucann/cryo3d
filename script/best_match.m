@@ -8,13 +8,13 @@
 % dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 
-function passed = best_match(pathout, dbpath, configfile)
+function passed = best_match(pathout, configfile)
 % Configure parameters
 
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));
-db0 = dbpath; %fullfile(cd, '../../sample-db'); % or chose your own database
-addpath(db0);
+%db0 = dbpath; %fullfile(cd, '../../sample-db'); % or chose your own database
+%addpath(db0);
 %pathout = db0;
 
 if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
