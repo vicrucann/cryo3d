@@ -59,7 +59,7 @@ end
 %% Save volume
 disp('Save initial volume');
 f_path = strfind(structfile, '\');
-if (f_path == [])
+if (isempty(f_path))
     f_path = strfind(stackfile, '/');
 end
 savefile = structfile(max(f_path)+1:end);
