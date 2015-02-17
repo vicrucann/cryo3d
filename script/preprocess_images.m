@@ -15,23 +15,23 @@
 % 7. npsfile = normally NPS.txt file, npsfile = 'G:\db-frank\NPS.txt';
 % 8. Apix - pixel size of micrograph for NPS data in Angstroms, Apix = 1.045;
 
-function passed = preprocess_images(pathout, stackfile, ctffile, npsfile, Apix, downsample, pfflag, pwflag)
+function passed = preprocess_images(pathout, stackfile, ctffile, downsample, pfflag, pwflag, npsfile, Apix)
 
 passed = 0;
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
 % Data and Params
-if (nargin < 8)
+if (nargin < 6)
     pwflag = 0; % Flag for whether or not to prewhiten the images
 end
-if (nargin < 7)
+if (nargin < 5)
     pfflag = 0; % Flag for whether or not to phase flip the images
 end
-if (nargin < 6)
+if (nargin < 4)
     downsample = 1; % Factor by which to downsample
 end
-if (nargin < 5)
+if (nargin < 3)
     disp('ERROR: Not enough input parameters');
     return;
 end
