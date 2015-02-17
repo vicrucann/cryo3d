@@ -41,10 +41,6 @@ end
 
 disp('Loading CTF info, NPS info, and image stack');
 
-% Load CTF things
-load(ctffile,'ctfinds','ctfParams');
-K = size(ctfParams,1);
-
 % Load NPS info
 % THIS IS HOW I READ IT IN FOR THE EXAMPLE FILE - NOT SURE IF THERE IS A
 % STANDARD FILE TYPE THAT IS TO BE READ IN
@@ -64,6 +60,15 @@ imgSx = size(noisyims,1);
 numim = size(noisyims,3);
 for i = 1:numim
     noisyims(:,:,i) = noisyims(:,:,i) - mean(reshape(noisyims(:,:,i),imgSx^2,1));
+end
+
+% Load CTF things
+if isempty(ctffile)
+    ctfinds = ones(numim,1);
+    K = 1;
+else
+    load(ctffile,'ctfinds','ctfParams');
+    K = size(ctfParams,1);
 end
 
 % Downsample each image
