@@ -454,16 +454,16 @@ mask = get_mask_struct_ncd([numpixsqrt numpixsqrt numpixsqrt],1); % reconstruct 
 recon = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds),ctfs(:,:,mod(keepinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
 % matlabpool close
 delete(gcp('nocreate'));
-save([pathout '/' savename],'-append','recon');
+save([pathout '/' savename '.mat'],'-append','recon');
 [~,h] = ReadMRC(imreconfile,1,-1);
-writeMRC(recon,h.pixA,[pathout '/fbm_recon.mrc'])
+writeMRC(recon,h.pixA,[pathout 'fbm_recon.mrc'])
 
 % Align images and save
 if alignims
     disp('Aligning images to best-matched projection and saving');
     noisyims = single(ReadMRC(imreconfile));
     aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
-    writeMRC(aligned_ims,h.pixA,[pathout '/fbm_aligned_ims.mrcs']);
+    writeMRC(aligned_ims,h.pixA,[pathout 'fbm_aligned_ims.mrcs']);
 end
 
 disp(['Total wall time for best_match.m: ' num2str(toc(totaltime)/60/60) ' hrs']);
