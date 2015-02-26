@@ -8,7 +8,7 @@
 % dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 
-function passed = best_match(pathout, configfile)
+%function passed = best_match(pathout, configfile)
 % Configure parameters
 
 addpath(fullfile(cd, '../src/best_match'));
@@ -464,6 +464,8 @@ if alignims
     noisyims = single(ReadMRC(imreconfile));
     aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
     writeMRC(aligned_ims,h.pixA,[pathout 'fbm_aligned_ims.mrcs']);
+    savename_h = 'fbm_aligned_ims.mat';
+    save([pathout '/' savename_h], '-v7.3', 'aligned_ims', 'recon', 'projinds', 'coord_axes');
 end
 
 disp(['Total wall time for best_match.m: ' num2str(toc(totaltime)/60/60) ' hrs']);
