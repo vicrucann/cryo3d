@@ -1,6 +1,6 @@
 % Function to read config file for making initial model
 
-function [structfile,sampdeg,coordfile,ctffile,savename,pf,addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(filename)
+function [structfile,maskfile,sampdeg,coordfile,ctffile,savename,pf,addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(filename)
 
 fileID = fopen(filename);
 if fileID < 0
@@ -28,6 +28,13 @@ if isempty(ind)
     end
 else
     structfile = C{2}{ind};
+end
+
+ind = find(strcmp(vars,'maskfile'));
+if isempty(ind)
+    maskfile = '';
+else
+    maskfile = C{2}{ind};
 end
 
 ind = find(strcmp(vars,'sampdeg'));

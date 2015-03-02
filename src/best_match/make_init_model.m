@@ -6,7 +6,7 @@
 
 function savename = make_init_model(configfile, pathout)
 
-[structfile,sampdeg,coordfile,ctffile,savename,pf,...
+[structfile,maskfile,sampdeg,coordfile,ctffile,savename,pf,...
     addnoise,SNR_dB,pixfromedge] = read_config_file_init_model(configfile);
 
 savename = [pathout '/' savename];
@@ -33,6 +33,12 @@ elseif strcmp(structfile(end-2:end),'mrc')
 else
     disp('Error: File extension must be .mat or .mrc');
     return
+end
+
+if isempty(maskfile)
+    structmask = ones(size(structure));
+else
+    structmask = double(ReadMRC(maskfile));
 end
 
 if isempty(ctffile)
@@ -95,4 +101,4 @@ if pf
     savename = [savename '_pf'];
 end
 savename = [savename '.mat'];
-save(savename,'-v7.3','maskim','ctfs','data_axes','coord_axes','mask','structure','proj_struct');
+save(savename,'-v7.3','maskim','ctfs','data_axes','coord_axes','mask','structure','proj_struct','structmask');
