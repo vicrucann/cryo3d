@@ -3,6 +3,7 @@
 % and finds the best match for each image
 
 function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem)
+%function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips_cache, num_chunks,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem)
 
 % Initializations
 projinds = -ones(numim,1);
@@ -15,6 +16,13 @@ searchtrans = searchtrans';
 currmem = monitor_memory_whos;
 minscale = 1.0;
 maxscale = 1.0;
+
+% map the ips memory
+%type = 'single';
+%memory_map = zeros(numbatches,1);
+%for i = 1:numbatches
+%    memory_map(1) = memmapfile([ips_cache num2str(i) '.dat'], 'Format', type);
+%end
 
 % For each CTF class
 for c = 1:numctf
@@ -48,6 +56,10 @@ for c = 1:numctf
         
         % For each batch of images
         for b = 1:numbatches
+            % type = 'single';
+            % m = memmapfile([ips_cache num2str(b) '.dat'], 'Format', type);
+            % ips_chunk = reshape(m.Data, nimg, npro, dr, dt);
+            % 
             
             % Get the indices of the images
             if b == numbatches
@@ -85,6 +97,9 @@ for c = 1:numctf
                     % First calculate the inner products between
                     % projections and current images
                     currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
+                    % 
+                    % ips_curr = ips_chunk(:,:,r-(b-1)*chunksize,currt);
+                    % currips = currprojcoeffs*(ips_curr*ic);
                     
 %                   % Calculate scale and adjust  
                     s = currips ./ currprojnorms / 2;
