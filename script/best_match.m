@@ -241,12 +241,14 @@ for run = 1:numruns
         % Compute inner products
         disp('Calc inner products'); pause(0.05); tic;
         ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
+        %[ips_cache, num_chunks] = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
         toc;
         
         % Calculate the SSDs to find best projection direction and
         % transformation params
         disp('Calc SSDs'); pause(0.05);tic;
         [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
+        %[projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips_cache, num_chunks,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
         toc;
         ssdtime = toc(ssdtime);
         ssdtimes(n) = ssdtime;

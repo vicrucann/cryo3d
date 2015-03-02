@@ -4,7 +4,7 @@
 clear;
 clc;
 
-gb = 0.9; % goal precision in Gb
+gb = 7; % goal precision in Gb
 nimg = 1000;
 npro = 300;
 nrot = 360;
