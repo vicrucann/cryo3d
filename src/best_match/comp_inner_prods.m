@@ -52,7 +52,7 @@ else            % Rotations + translations
     batchsize = ceil(numrot / numbatches);
     
     fprintf('Number of GPU batches: %i\n', numbatches);
-    fprintf('Memory size of one batch, Gb: %i\n', floor(batchsize/1024^3));
+    fprintf('Memory size of one batch: %i\n', batchsize);
     
     for b = 1:numbatches
         
