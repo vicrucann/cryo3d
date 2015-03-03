@@ -40,6 +40,7 @@ if isempty(maskfile)
 else
     structmask = double(ReadMRC(maskfile));
 end
+structure = structure.*structmask;
 
 if isempty(ctffile)
     ctfs = ones(size(structure,1),size(structure,2));
