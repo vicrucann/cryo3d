@@ -5,12 +5,13 @@ pathout = 'G:\20150205_sdp\';
 
 addpath(fullfile(cd, '../src/mrc'));
 
-ds = 3;
+ds = 1;
 vox_size = 1.32;
 
 listing = dir([path_particles '*.mrcs']);
 ntot = size(listing, 1);
-ndow = round(ntot / ds);
+ndow = ceil(ntot / ds);
+%ndow = ntot;
 
 for i = 1 : ndow
     fname = [path_particles '\' listing(i).name];
