@@ -8,7 +8,7 @@
 % dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 
-%function passed = best_match(pathout, configfile)
+function passed = best_match(pathout, configfile)
 % Configure parameters
 
 addpath(fullfile(cd, '../src/best_match'));
