@@ -5,7 +5,7 @@ pathout = 'G:\20150205_sdp\';
 
 addpath(fullfile(cd, '../src/mrc'));
 
-ds = 1;
+ds = 2;
 vox_size = 1.32;
 
 listing = dir([path_particles '*.mrcs']);
@@ -13,13 +13,15 @@ ntot = size(listing, 1);
 ndow = ceil(ntot / ds);
 %ndow = ntot;
 
-for i = 1 : ndow
-    fname = [path_particles '\' listing(i).name];
-    a = ReadMRC(fname);
-    if (i == 1)
-        t = a;
-    else
-        t = cat(3, t, a);
+for i = 1 : ntot
+    if (mod(i,2) == 1)
+        fname = [path_particles '\' listing(i).name];
+        a = ReadMRC(fname);
+        if (i == 1)
+            t = a;
+        else
+            t = cat(3, t, a);
+        end
     end
     
     perc = floor(i/ndow)*100;
@@ -30,5 +32,5 @@ for i = 1 : ndow
     end
 end
 fprintf('\n');
-writeMRC(t, vox_size, [pathout '\' 'stackfile_ds' num2str(ds) '.mrcs']);
+writeMRC(t, vox_size, [pathout '\' 'stackfile_ds' num2str(ds) 'nd.mrcs']);
 fprintf('done.\n');
