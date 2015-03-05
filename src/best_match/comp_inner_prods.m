@@ -99,7 +99,7 @@ else            % Rotations + translations
            ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g);
         end
         
-        chunk = gather(ips_g);
+        %chunk = gather(ips_g);
 % gb = 1.5;
 % type = 'single';
 % stype = 4;
@@ -108,10 +108,10 @@ else            % Rotations + translations
 % nimg = numimcoeffs;
 % dr = floor(gb*1024^3/(stype*nimg*npro*dt));
 
-        fname = [num2str(b) '.dat'];
-        fid = fopen([ips_cache fname], 'Wb');
-        fwrite(fid, chunk, type);
-        fclose(fid);
+        %fname = [num2str(b) '.dat'];
+        %fid = fopen([ips_cache fname], 'Wb');
+        %fwrite(fid, chunk, type);
+        %fclose(fid);
         
         perc = b/numbatches*100;
         fprintf('%i ', perc);
