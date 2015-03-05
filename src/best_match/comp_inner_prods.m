@@ -12,11 +12,11 @@ function ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numi
 projbasis3d_g = gpuArray(single(reshape(projbasis,[numpixsqrt, numpixsqrt, numprojcoeffs])));
 imbasis_g = gpuArray(imbasis)';
 
-%if ~exist('cache')
-%    mkdir('cache');
-%end
-%ips_cache = 'cache\';
-%type = 'single';
+if ~exist('cache')
+    mkdir('cache');
+end
+ips_cache = 'cache\';
+type = 'single';
 
 if nargin == 8  % Only rotations
     
@@ -28,19 +28,12 @@ if nargin == 8  % Only rotations
     ips_g = permute(ips_g,[2 1 3]);
     ips_g = 2*ips_g;
     ips = gather(ips_g);
-    
-%    fname = ['0.dat'];
-%    fid = fopen([ips_cache fname], 'Wb');
-%    fwrite(fid, ips, type); % this could be improved if this chunk info was already used
-%    fclose(fid);
-    
+       
 else            % Rotations + translations
     
     % Initializations, and determine if need to compute inner products in
     % batches due to limited space on gpu
     ips = zeros(numprojcoeffs,numimcoeffs,numrot,numtrans,'single');
-    
-    %fprintf('percent completed: ');
     
     validtrans = unique(searchtrans(searchtrans > 0))';
     g = gpuDevice;
@@ -52,7 +45,8 @@ else            % Rotations + translations
     batchsize = ceil(numrot / numbatches);
     
     fprintf('Number of GPU batches: %i\n', numbatches);
-    fprintf('Memory size of one batch: %i\n', batchsize);
+    fprintf('Memory size of one batch in Gb, less than: %i\n', floor(neededmem/1024^3));
+    fprintf('Percent completed: ');
     
     for b = 1:numbatches
         
@@ -105,7 +99,7 @@ else            % Rotations + translations
            ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g);
         end
         
-%         batch = gather(ips_g);
+        chunk = gather(ips_g);
 % gb = 1.5;
 % type = 'single';
 % stype = 4;
@@ -114,16 +108,15 @@ else            % Rotations + translations
 % nimg = numimcoeffs;
 % dr = floor(gb*1024^3/(stype*nimg*npro*dt));
 
-%         fname = [num2str(b) '.dat'];
-%         fid = fopen([ips_cache fname], 'Wb');
-
-%         fwrite(fid, chunk, type); % this could be improved if this chunk info was already used
-%         fclose(fid);
-%         
-%         perc = b/numbatches*100;
-%         fprintf('%i ', perc);
+        fname = [num2str(b) '.dat'];
+        fid = fopen([ips_cache fname], 'Wb');
+        fwrite(fid, chunk, type);
+        fclose(fid);
+        
+        perc = b/numbatches*100;
+        fprintf('%i ', perc);
     end
-    %fprintf('/n');
+        fprintf('\n');
     clear  pbrottrans_g g
     
 end
