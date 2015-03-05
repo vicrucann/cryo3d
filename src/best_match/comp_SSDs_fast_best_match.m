@@ -85,37 +85,35 @@ for c = 1:numctf
                 currimnorms = imnorms(currt,curriminds);
                 currimnorms = currimnorms(onesprojc,:);
                 
-                mm = memmapfile([ips_cache num2str(1) '.dat'], 'Format', type); % open first memmapfile
-                dr = ceil(numrot/numChunks);
-                dr_last = numrot-(numChunks-1)*dr;
-                chunk = reshape(mm.Data, size(projcoeffs,2), size(imcoeffs,2), dr, size(imnorms,1));
+                %mm = memmapfile([ips_cache num2str(1) '.dat'], 'Format', type); % open first memmapfile
+                %dr = ceil(numrot/numChunks);
+                %dr_last = numrot-(numChunks-1)*dr;
+                %chunk = reshape(mm.Data, size(projcoeffs,2), size(imcoeffs,2), dr, size(imnorms,1));
                 % For each rotation
                 for r = 1:numrot
                     
                     % First calculate the inner products between
                     % projections and current images
-                    %currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
-                    idx_m = ceil(r/dr);
-                    idx_d = mod(r,dr);
-                    if (idx_d == 0)
-                        idx_d = r;
-                    end
+                    currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
+                    %idx_m = ceil(r/dr);
+                    %idx_d = mod(r,dr);
+                    %if (idx_d == 0)
+                    %    idx_d = r;
+                    %end
                     % DEBUG MODE ONLY: %fprintf('r=%i, currt=%i, idx_m=%i, idx_d=%i\n', r, currt, idx_m, idx_d);
-                    if ( idx_m > ceil((r-1)/dr) && r > 1)
-                        mm = memmapfile([ips_cache num2str(idx_m) '.dat'], 'Format', type);
-                        if (idx_m < numChunks)
-                            chunk = reshape(mm.Data, size(projcoeffs,2), size(imcoeffs,2), dr, size(imnorms,1));
-                        else
-                            chunk = reshape(mm.Data, size(projcoeffs,2), size(imcoeffs,2), dr_last, size(imnorms,1));
-                        end
-                    %else
-                    %    chunk = reshape(mm.Data, size(projcoeffs,2), size(imcoeffs,2), dr, size(imnorms,1));
-                    end
-                    ips_curr = chunk(:,:,idx_d,currt);
-                    if (~isequal(ips_curr,ips(:,:,r,currt)) )
-                         error('Failed matrix equality test when testing caching functions.');
-                    end
-                    currips = currprojcoeffs*(ips_curr*ic);
+                    %if ( idx_m > ceil((r-1)/dr) && r > 1)
+                    %    mm = memmapfile([ips_cache num2str(idx_m) '.dat'], 'Format', type);
+                    %    if (idx_m < numChunks)
+                    %        chunk = reshape(mm.Data, size(projcoeffs,2), size(imcoeffs,2), dr, size(imnorms,1));
+                    %    else
+                    %        chunk = reshape(mm.Data, size(projcoeffs,2), size(imcoeffs,2), dr_last, size(imnorms,1));
+                    %    end
+                    %end
+                    %ips_curr = chunk(:,:,idx_d,currt);
+                    %if (~isequal(ips_curr,ips(:,:,r,currt)) )
+                    %     error('Failed matrix equality test when testing caching functions.');
+                    %end
+                    %currips = currprojcoeffs*(ips_curr*ic);
                     
 %                   % Calculate scale and adjust  
                     s = currips ./ currprojnorms / 2;
