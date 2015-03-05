@@ -8,7 +8,7 @@
 % dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 
-%function passed = best_match(pathout, configfile)
+function passed = best_match(pathout, configfile)
 % Configure parameters
 
 addpath(fullfile(cd, '../src/best_match'));
@@ -132,11 +132,11 @@ for run = 1:numruns
     disp('Loading initial structure and templates'); tic;
     if run > 1
         clear proj_struct
-        load(initprojfile,'coeffproj','scoreproj','latentproj','maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct','structmask');
+        load(initprojfile,'coeffproj','scoreproj','latentproj','maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
     else    
         % Get the initial model parameters
         initprojfile = make_init_model(configfile, pathout);
-        load(initprojfile,'maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct','structmask');
+        load(initprojfile,'maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
 
         % Rescale projection intensities to match images
         if normprojint
@@ -149,9 +149,9 @@ for run = 1:numruns
         pcatic = tic; [coeffproj, scoreproj, latentproj] = princomp(data); toc(pcatic);
         clear data;
     end
-%     if (~exist('structmask','var'))
-%         structmask = ones(size(structure));
-%     end
+    if (~exist('structmask','var'))
+        structmask = ones(size(structure));
+    end
     
     % Set up projection subspace and coeffs
     disp('Setting up initial projection subspace');
@@ -241,14 +241,12 @@ for run = 1:numruns
         % Compute inner products
         disp('Calc inner products'); pause(0.05); tic;
         ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
-        %[ips_cache, num_chunks] = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
         toc;
         
         % Calculate the SSDs to find best projection direction and
         % transformation params
         disp('Calc SSDs'); pause(0.05);tic;
         [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
-        %[projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips_cache, num_chunks,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
         toc;
         ssdtime = toc(ssdtime);
         ssdtimes(n) = ssdtime;
@@ -443,7 +441,7 @@ for run = 1:numruns
     if reconhalf
         savename = [savename '_h' num2str(reconstartind)];
     end
-    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','f','imfile','initprojfile','imreconfile','convtol','coord_axes','structmask');
+    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','f','imfile','initprojfile','imreconfile','convtol','coord_axes');
     
     % Some clean up
     clear structure_final structure proj_est proj_last
@@ -459,16 +457,13 @@ delete(gcp('nocreate'));
 save([pathout '/' savename '.mat'],'-append','recon');
 [~,h] = ReadMRC(imreconfile,1,-1);
 writeMRC(recon,h.pixA,[pathout 'fbm_recon.mrc'])
-if ~isequal(structmask,ones(size(structmask)))
-    writeMRC(recon.*structmask,h.pixA,[pathout 'fbm_recon_masked.mrc']);
-end
 
 % Align images and save
 if alignims
     disp('Aligning images to best-matched projection and saving');
     noisyims = single(ReadMRC(imreconfile));
     aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
-    writeMRC(aligned_ims,h.pixA,[pathout 'fbm_aligned_ims.mrcs']);
+    %writeMRC(aligned_ims,h.pixA,[pathout 'fbm_aligned_ims.mrcs']);
     savename_h = 'fbm_aligned_ims.mat';
     save([pathout '/' savename_h], '-v7.3', 'aligned_ims', 'recon', 'projinds', 'coord_axes');
 end
