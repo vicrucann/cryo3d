@@ -132,11 +132,11 @@ for run = 1:numruns
     disp('Loading initial structure and templates'); tic;
     if run > 1
         clear proj_struct
-        load(initprojfile,'coeffproj','scoreproj','latentproj','maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
+        load(initprojfile,'coeffproj','scoreproj','latentproj','maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct','structmask');
     else    
         % Get the initial model parameters
         initprojfile = make_init_model(configfile, pathout);
-        load(initprojfile,'maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct');
+        load(initprojfile,'maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct','structmask');
 
         % Rescale projection intensities to match images
         if normprojint
@@ -149,9 +149,9 @@ for run = 1:numruns
         pcatic = tic; [coeffproj, scoreproj, latentproj] = princomp(data); toc(pcatic);
         clear data;
     end
-    if (~exist('structmask','var'))
-        structmask = ones(size(structure));
-    end
+%    if (~exist('structmask','var'))
+%        structmask = ones(size(structure));
+%    end
     
     % Set up projection subspace and coeffs
     disp('Setting up initial projection subspace');
@@ -441,7 +441,7 @@ for run = 1:numruns
     if reconhalf
         savename = [savename '_h' num2str(reconstartind)];
     end
-    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','f','imfile','initprojfile','imreconfile','convtol','coord_axes');
+    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','f','imfile','initprojfile','imreconfile','convtol','coord_axes','structmask');
     
     % Some clean up
     clear structure_final structure proj_est proj_last
@@ -457,6 +457,10 @@ delete(gcp('nocreate'));
 save([pathout '/' savename '.mat'],'-append','recon');
 [~,h] = ReadMRC(imreconfile,1,-1);
 writeMRC(recon,h.pixA,[pathout 'fbm_recon.mrc'])
+
+if ~isequal(structmask,ones(size(structmask)))
+    writeMRC(recon.*structmask,h.pixA,[pathout 'fbm_recon_masked.mrc']);
+end
 
 % Align images and save
 if alignims
