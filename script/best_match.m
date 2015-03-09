@@ -7,13 +7,10 @@
 % pathout = 'G:\workspace\';
 % dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
+% caching = 1 when need to cache large variable, zero if otherwise
 
-%function passed = best_match(pathout, configfile)
+function passed = best_match(pathout, configfile, caching)
 % Configure parameters
-
-pathout = 'G:\workspace\db-hongwei\dselected_lpf30_ds2\';
-configfile = 'G:\workspace\db-hongwei\dselected_lpf30_ds2\_fbm_config.txt';
-caching = 0; % 1 to put caching on, 0 - no caching will be used
 
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));
