@@ -6,17 +6,10 @@
 % ips_cache output variable contains the list of cache files
 % by default the files are saved in the current directory in 'cache\' folder
 
-function ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans)
-%function [ips_cache, num_chunks] = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans)
+function ips_cache = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching)
 
 projbasis3d_g = gpuArray(single(reshape(projbasis,[numpixsqrt, numpixsqrt, numprojcoeffs])));
 imbasis_g = gpuArray(imbasis)';
-
-if ~exist('cache')
-    mkdir('cache');
-end
-ips_cache = 'cache\';
-type = 'single';
 
 if nargin == 8  % Only rotations
     
@@ -33,8 +26,8 @@ else            % Rotations + translations
     
     % Initializations, and determine if need to compute inner products in
     % batches due to limited space on gpu
-    ips = zeros(numprojcoeffs,numimcoeffs,numrot,numtrans,'single');
-    
+    %ips = zeros(numprojcoeffs,numimcoeffs,numrot,numtrans,'single');
+        
     validtrans = unique(searchtrans(searchtrans > 0))';
     g = gpuDevice;
     neededmem = numimcoeffs*numprojcoeffs*numrot*numtrans*8 + numpix*numprojcoeffs*8;
@@ -46,6 +39,8 @@ else            % Rotations + translations
     
     fprintf('Number of GPU batches: %i\n', numbatches);
     fprintf('Memory size of one batch in Gb, less than: %i\n', floor(neededmem/1024^3));
+    
+    ips_cache = create_cached_array([numprojcoeffs,numimcoeffs,numrot,numtrans], 'cache', 'single', numbatches, 3, caching);
     fprintf('Percent completed: ');
     
     for b = 1:numbatches
@@ -93,26 +88,11 @@ else            % Rotations + translations
         % Rearrange order and transfer back to host memory
         ips_g = permute(ips_g,[2 1 3 4]);
         ips_g = 2*ips_g;
-        if b < numbatches
-           ips(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
-        else
-           ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g);
-        end
+%         if b < numbatches ips(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
+%         else ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g); end
         
-        %chunk = gather(ips_g);
-% gb = 1.5;
-% type = 'single';
-% stype = 4;
-% dt = numtrans;
-% npro = numprojcoeffs;
-% nimg = numimcoeffs;
-% dr = floor(gb*1024^3/(stype*nimg*npro*dt));
-
-        %fname = [num2str(b) '.dat'];
-        %fid = fopen([ips_cache fname], 'Wb');
-        %fwrite(fid, chunk, type);
-        %fclose(fid);
-        
+        chunk = gather(ips_g);
+        write_cached_array_chunk(ips_cache, chunk, b);
         perc = b/numbatches*100;
         fprintf('%i ', perc);
     end
