@@ -8,11 +8,16 @@
 % dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 
-function passed = best_match(pathout, configfile)
+%function passed = best_match(pathout, configfile)
 % Configure parameters
+
+pathout = 'G:\workspace\db-hongwei\dselected_lpf30_ds2\';
+configfile = 'G:\workspace\db-hongwei\dselected_lpf30_ds2\_fbm_config.txt';
+caching = 0; % 1 to put caching on, 0 - no caching will be used
 
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));
+addpath(fullfile(cd, '../src/caching'));
 %db0 = dbpath; %fullfile(cd, '../../sample-db'); % or chose your own database
 %addpath(db0);
 %pathout = db0;
@@ -240,7 +245,7 @@ for run = 1:numruns
         
         % Compute inner products
         disp('Calc inner products'); pause(0.05); tic;
-        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
+        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching);
         toc;
         
         % Calculate the SSDs to find best projection direction and
