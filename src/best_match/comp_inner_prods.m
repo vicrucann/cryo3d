@@ -88,11 +88,20 @@ else            % Rotations + translations
         % Rearrange order and transfer back to host memory
         ips_g = permute(ips_g,[2 1 3 4]);
         ips_g = 2*ips_g;
-%         if b < numbatches ips(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
-%         else ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g); end
+        %if b < numbatches 
+        %    ips(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
+        %else
+        %    ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g); 
+        %end
         
-        chunk = gather(ips_g);
-        write_cached_array_chunk(ips_cache, chunk, b);
+        chunk = single(gather(ips_g));
+        ips_cache = write_cached_array_chunk(ips_cache, chunk, b);
+        
+        %DEBUG: 
+        %if (~isequal(ips_cache.data, ips)) 
+        %    error('Failed matrix equality test when testing caching functions.'); 
+        %end
+        
         perc = b/numbatches*100;
         fprintf('%i ', perc);
     end

@@ -1,6 +1,5 @@
-function passed = write_cached_array_chunk(cacharr, chunk, idx_chunk)
+function cacharr = write_cached_array_chunk(cacharr, chunk, idx_chunk)
 
-passed = 0;
 if (cacharr.caching == 1)
     fname = [num2str(idx_chunk) '.dat'];
     fid = fopen([cacharr.path fname], 'Wb');
@@ -17,4 +16,3 @@ else
         cacharr.data(:,:,batchsize*(idx_chunk-1)+1:end,:) = chunk;
     end
 end
-passed = 1;
