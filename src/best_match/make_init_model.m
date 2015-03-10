@@ -38,7 +38,9 @@ end
 if isempty(maskfile)
     structmask = ones(size(structure));
 else
-    structmask = double(ReadMRC(maskfile));
+    %structmask = double(ReadMRC(maskfile));
+    h_map = load(maskfile);
+    structmask = double(h_map.map);
 end
 structure = structure.*structmask;
 

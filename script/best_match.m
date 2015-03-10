@@ -9,7 +9,7 @@
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 % caching = 1 when need to cache large variable, zero if otherwise
 
-function passed = best_match(pathout, configfile, caching)
+%function passed = best_match(pathout, configfile, caching)
 % Configure parameters
 
 addpath(fullfile(cd, '../src/best_match'));
