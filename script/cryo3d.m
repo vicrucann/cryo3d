@@ -3,20 +3,20 @@
 
 %% Most frequent edited parameters
 
-pathout = 'G:\workspace\db-hongwei\ds03rd_lpf30_ds2\test\';
-pathdata = 'G:\20150205_sdp\';
+pathout = '/home/vicru/temp/db-hongwei/dselected_lpf30_ds2/theta6/';
+pathdata = '/home/tagarelab_tmp/1502-db-hongwei/';
 caching = 0;
 dtheta = 6;
 maskfile = [];
-maxmem = 26624;
-numthreads = 6;
+maxmem = 40624;
+numthreads = 12;
 rotstep = 3;
 transmax = 4;
 
 %% Preprocessing
 
-structfile = [pathdata '\' 'run1_class001.mrc'];
-stackfile = [pathdata '\' 'stackfile_ds3_third.mrcs'];
+structfile = [pathdata 'run1_class001.mrc'];
+stackfile = [pathdata 'stackfile_selected.mrcs'];
 ctffile = [];
 lpf = 30;
 sigma = 1;

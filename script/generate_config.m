@@ -6,7 +6,7 @@ function outfile = generate_config(pathout, imfile, ctffile, substep, reconhalf,
 %   Run from cryo3d.m
 
 fname = '_config_bm.txt';
-fid = fopen([pathout '/' fname], 'w');
+fid = fopen([pathout fname], 'w');
 fprintf(fid, 'imfile = %s \n', imfile);
 if (~isempty(ctffile))
     fprintf(fid, 'ctffile = %s \n', ctffile);
@@ -38,6 +38,6 @@ fprintf(fid, 'transwidth = %i \n', transwidth);
 fprintf(fid, 'alignims = %i \n', alignims);
 
 fclose(fid);
-outfile = [pathout '/' fname];
+outfile = [pathout fname];
 end
 
