@@ -67,4 +67,4 @@ if ds > 1
     savefile = [savefile '_ds' num2str(ds)];
 end
 writeMRC(structure,voxelsize,[pathout savefile '.mrc']);
-outfile = [pathout savefile];
+outfile = [pathout savefile '.mrc'];
