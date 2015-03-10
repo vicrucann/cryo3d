@@ -3,12 +3,12 @@
 
 %% Most frequent edited parameters
 
-pathout = '/home/vicru/temp/db-hongwei/dselected_lpf30_ds2/theta6/';
-pathdata = '/home/tagarelab_tmp/1502-db-hongwei/';
+pathout = 'G:\workspace\db-hongwei\dselected_lpf30_ds2\theta6\';
+pathdata = 'G:\20150205_sdp\';
 caching = 0;
 dtheta = 6;
 maskfile = [];
-maxmem = 40624;
+maxmem = 33624;
 numthreads = 12;
 rotstep = 3;
 transmax = 4;
