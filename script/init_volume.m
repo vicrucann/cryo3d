@@ -7,9 +7,8 @@
 % sigma = 1; Controls width of Gaussian edge for low-pass filter
 % ds = 2; Factor by which to downsample the volume
 
-function passed = init_volume(pathout, structfile, lpf, sigma, ds)
+function outfile = init_volume(pathout, structfile, lpf, sigma, ds)
 
-passed = 0;
 if (nargin < 5)
     ds = 1;
 end
@@ -68,4 +67,4 @@ if ds > 1
     savefile = [savefile '_ds' num2str(ds)];
 end
 writeMRC(structure,voxelsize,[pathout savefile '.mrc']);
-passed = 1;
+outfile = [pathout savefile];
