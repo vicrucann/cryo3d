@@ -6,11 +6,11 @@
 pathout = 'G:\workspace\db-hongwei\ds03rd_lpf30_ds2\test\';
 pathdata = 'G:\20150205_sdp\';
 caching = 0;
-dtheta = 12;
+dtheta = 6;
 maskfile = [];
 maxmem = 26624;
 numthreads = 6;
-rotstep = 5;
+rotstep = 3;
 transmax = 4;
 
 %% Preprocessing
@@ -25,11 +25,10 @@ downsample = 2;
 
 structfile = init_volume(pathout, structfile, lpf, sigma, ds);
 coordfile = coordinate_axes(pathout, dtheta);
-imfile = preprocess_images(pathout, stackfile, ctffile, donwsample);
+imfile = preprocess_images(pathout, stackfile, ctffile, downsample);
 
 %% Best Match
 
-configfile = '';
 % Parameters for only using part of the data
 substep = 0;
 reconhalf = 0;
@@ -53,5 +52,9 @@ transwidth = 1;
 % Output parameters
 alignims = 1;
 % Generate config file
+configfile = generate_config(pathout, imfile, ctffile, substep, reconhalf, reconstartind, ...
+    structfile, coordfile, maskfile, pf, pixfromedge, maxmem, numthreads, dispflag, ...
+    f, numruns, maxnumiter, convtol, normprojint, rotstart, rotstep, rotend, transmax, transdelta, transwidth, ...
+    alignims);
 
 best_match(pathout, configfile, caching);
