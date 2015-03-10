@@ -458,7 +458,7 @@ recon = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds
 delete(gcp('nocreate'));
 save([pathout '/' savename '.mat'],'-append','recon');
 [~,h] = ReadMRC(imreconfile,1,-1);
-writeMRC(recon,h.pixA,[pathout 'fbm_recon.mrc'])
+writeMRC(recon,h.pixA,[pathout '/' 'fbm_recon.mrc'])
 
 if ~isequal(structmask,ones(size(structmask)))
     writeMRC(recon.*structmask,h.pixA,[pathout 'fbm_recon_masked.mrc']);
