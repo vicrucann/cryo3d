@@ -6,9 +6,8 @@
 % disp_flag = 1; Flag (0/1) for displaying the coordinates
 % fig_num = 10; Figure number for displaying coordinates
 
-function passed = coordinate_axes(pathout, dtheta, disp_flag, fig_num)
+function outfile = coordinate_axes(pathout, dtheta, disp_flag, fig_num)
 
-passed = 0;
 if nargin < 4
     fig_num = 1;
 end
@@ -22,6 +21,5 @@ end
 
 addpath(fullfile(cd, '../src/best_match'));
 coord_axes = create_approx_uniform_axes_whole_sphere(dtheta,disp_flag,fig_num);
-save([pathout '/coord_axes_' num2str(dtheta) '.mat'], 'coord_axes');
-
-passed = 1;
+outfile = [pathout '/coord_axes_' num2str(dtheta) '.mat'];
+save(outfile, 'coord_axes');

@@ -15,9 +15,8 @@
 % 7. npsfile = normally NPS.txt file, npsfile = 'G:\db-frank\NPS.txt';
 % 8. Apix - pixel size of micrograph for NPS data in Angstroms, Apix = 1.045;
 
-function passed = preprocess_images(pathout, stackfile, ctffile, downsample, pfflag, pwflag, npsfile, Apix)
+function outfile = preprocess_images(pathout, stackfile, ctffile, downsample, pfflag, pwflag, npsfile, Apix)
 
-passed = 0;
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
@@ -180,4 +179,4 @@ if pwflag
 end
 savefile = [savefile '_norm.mrcs'];
 writeMRC(noisyims,Apixstack,[pathout savefile]);
-passed = 1;
+outfile = [pathout savefile];
