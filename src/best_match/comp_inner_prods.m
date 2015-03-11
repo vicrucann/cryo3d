@@ -26,7 +26,6 @@ else            % Rotations + translations
     
     % Initializations, and determine if need to compute inner products in
     % batches due to limited space on gpu
-    %ips = zeros(numprojcoeffs,numimcoeffs,numrot,numtrans,'single');
         
     validtrans = unique(searchtrans(searchtrans > 0))';
     g = gpuDevice;
@@ -40,7 +39,8 @@ else            % Rotations + translations
     fprintf('Number of GPU batches: %i\n', numbatches);
     fprintf('Memory size of one batch in Gb, less than: %i\n', floor(neededmem/1024^3));
     
-    ips_cache = create_cached_array([numprojcoeffs,numimcoeffs,numrot,numtrans], 'cache', 'single', numbatches, 3, caching);
+    ips_cache = create_cached_array([numprojcoeffs,numimcoeffs,numrot,numtrans], ...
+        'cache', 'single', numbatches, 3, caching);
     fprintf('Percent completed: ');
     
     for b = 1:numbatches
@@ -88,22 +88,13 @@ else            % Rotations + translations
         % Rearrange order and transfer back to host memory
         ips_g = permute(ips_g,[2 1 3 4]);
         ips_g = 2*ips_g;
-        %if b < numbatches 
-        %    ips(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
-        %else
-        %    ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g); 
-        %end
         
         chunk = single(gather(ips_g));
         ips_cache = write_cached_array_chunk(ips_cache, chunk, b);
+        clear chunk;
         
-        %DEBUG: 
-        %if (~isequal(ips_cache.data, ips)) 
-        %    error('Failed matrix equality test when testing caching functions.'); 
-        %end
-        
-        perc = b/numbatches*100;
-        fprintf('%i ', perc);
+        perc = round(b/numbatches)*100;
+        fprintf('%u ', perc);
     end
         fprintf('\n');
     clear  pbrottrans_g g
