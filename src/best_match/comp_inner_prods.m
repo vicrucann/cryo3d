@@ -93,7 +93,7 @@ else            % Rotations + translations
         ips_cache = write_cached_array_chunk(ips_cache, chunk, b);
         clear chunk;
         
-        perc = round(b/numbatches)*100;
+        perc = round(b/numbatches*100);
         fprintf('%u ', perc);
     end
         fprintf('\n');

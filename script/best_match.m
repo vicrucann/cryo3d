@@ -15,9 +15,6 @@ function passed = best_match(pathout, configfile, caching)
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));
 addpath(fullfile(cd, '../src/caching'));
-%db0 = dbpath; %fullfile(cd, '../../sample-db'); % or chose your own database
-%addpath(db0);
-%pathout = db0;
 
 if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
     delete(gcp('nocreate'));
