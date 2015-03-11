@@ -13,6 +13,11 @@ numthreads = 12;
 rotstep = 3;
 transmax = 4;
 
+slash = pathout(end);
+if (~isequal(slash, '\') && ~isequal(slash, '/'))
+    pathout = [pathout '/\']; % windows and linux
+end
+
 %% Preprocessing
 
 structfile = [pathdata 'run1_class001.mrc'];
