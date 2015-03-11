@@ -3,14 +3,14 @@
 
 %% Most frequent edited parameters
 
-pathout = 'G:\workspace\db-hongwei\dselected_lpf30_ds2\theta6\';
+pathout = 'G:\workspace\db-hongwei\dcluster_lpf30_ds2\14_theta12_t4_r1\';
 pathdata = 'G:\20150205_sdp\';
-caching = 0;
-dtheta = 6;
+caching = -1; % 1 for caching on, 0 caching off, -1 automatic caching
+dtheta = 12;
 maskfile = [];
-maxmem = 33624;
+maxmem = 35624;
 numthreads = 12;
-rotstep = 3;
+rotstep = 1;
 transmax = 4;
 
 slash = pathout(end);
@@ -21,7 +21,7 @@ end
 %% Preprocessing
 
 structfile = [pathdata 'run1_class001.mrc'];
-stackfile = [pathdata 'stackfile_selected.mrcs'];
+stackfile = [pathdata 'stackfile_cluster_14.mrcs'];
 ctffile = [];
 lpf = 30;
 sigma = 1;

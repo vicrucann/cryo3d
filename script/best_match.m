@@ -7,10 +7,14 @@
 % pathout = 'G:\workspace\';
 % dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
-% caching = 1 when need to cache large variable, zero if otherwise
+% caching: 1 to turn on, 0 turns off, -1 automatic caching
 
 function passed = best_match(pathout, configfile, caching)
 % Configure parameters
+
+if (nargin < 3)
+    caching = -1;
+end
 
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));

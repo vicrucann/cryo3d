@@ -37,7 +37,7 @@ else            % Rotations + translations
     batchsize = ceil(numrot / numbatches);
     
     fprintf('Number of GPU batches: %i\n', numbatches);
-    fprintf('Memory size of one batch in Gb, less than: %i\n', floor(neededmem/1024^3));
+    fprintf('Total memory size of all batches in Gb, less than: %i\n', floor(neededmem/1024^3));
     
     ips_cache = create_cached_array([numprojcoeffs,numimcoeffs,numrot,numtrans], ...
         'cache', 'single', numbatches, 3, caching);
