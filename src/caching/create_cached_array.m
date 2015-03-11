@@ -2,6 +2,30 @@ function cacharr = create_cached_array(size, path_cache, type, num_chunks, idx_b
 
 if ~exist(path_cache)
     mkdir(path_cache);
+else
+    delete([path_cache '\/*.dat']);
+    warning('Cache folder has been cleared from previous cache data.');
+end
+
+if caching == -1 % caching is determined automatically
+    if isequal(type, 'single')
+        reqmem = 4; % bytes for single
+    else % have to fulfill to add more data types and their sizes
+        reqmem = 8;
+    end
+    for i = 1:length(size)
+        reqmem = reqmem*size(i); % total size of variable in bytes
+    end
+    reqmem = 1.2*reqmem; % assume it's 20% more than required to allow for other side variables
+    
+    user = memory;
+    if (user.MaxPossibleArrayBytes > reqmem)
+        fprintf('No caching will be used, there is enough memory \n');
+        caching = 0;
+    else
+        warning('Not enough memory: caching will be used. Processing time will be slower. ');
+        caching = 1;
+    end
 end
 
 if (caching == 0)
