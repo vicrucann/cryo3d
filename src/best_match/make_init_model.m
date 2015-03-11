@@ -38,9 +38,15 @@ end
 if isempty(maskfile)
     structmask = ones(size(structure));
 else
-    %structmask = double(ReadMRC(maskfile));
-    h_map = load(maskfile);
-    structmask = double(h_map.map);
+    ext = maskfile(end-2:end);
+    if (~isequal(ext, 'mat'))
+        structmask = double(ReadMRC(maskfile));
+    else
+        mask = load(maskfile);
+        flnm = fieldnames(mask);
+        structmask = double(mask.(flnm{1}));
+    end
+    
 end
 structure = structure.*structmask;
 
