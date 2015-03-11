@@ -10,5 +10,5 @@ else
     data = 0;
 end
 
-cacharr = struct('dimensions', size, 'path', [path_cache '\'], 'type', type, 'nchunks', num_chunks, 'broken', idx_broken, ...
+cacharr = struct('dimensions', size, 'path', [path_cache '\/'], 'type', type, 'nchunks', num_chunks, 'broken', idx_broken, ...
     'caching', caching, 'data', data, 'currchunk', 1);
