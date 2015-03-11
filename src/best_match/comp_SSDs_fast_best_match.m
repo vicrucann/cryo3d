@@ -1,9 +1,9 @@
 % Function to be used with fast_best_match code
 % Calculates the sum of squared differences between projections and images
 % and finds the best match for each image
+% The function is edited to be compatible with caching data structure
 
 function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem)
-%function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips_cache, num_chunks,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem)
 
 % Initializations
 projinds = -ones(numim,1);
@@ -80,34 +80,11 @@ for c = 1:numctf
                 currimnorms = imnorms(currt,curriminds);
                 currimnorms = currimnorms(onesprojc,:);
                 
-                %nc = ips.nchunks;
-                %nr = ips.dimensions(ips.broken);
-                %dr = ceil(nr/nc);
-                %dr_last = nr-(nc-1)*dr;
-                %chunk = read_cached_array_chunk(ips, 1, [ips.dimensions(1), ips.dimensions(2), dr, ips.dimensions(4)]);
                 % For each rotation
                 for r = 1:numrot
                     
                     % First calculate the inner products between
                     % projections and current images
-                    
-                    %currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
-                    
-                    %idx_m = ceil(r/dr);
-                    %idx_d = mod(r,dr);
-                    %if (idx_d == 0)
-                    %    idx_d = dr;
-                    %end
-                    % DEBUG: %fprintf('r=%i, currt=%i, idx_m=%i, idx_d=%i\n', r, currt, idx_m, idx_d);
-                    %if ( idx_m > ceil((r-1)/dr) && r > 1)
-                    %    if (idx_m == ips.nchunks)
-                    %        dr = dr_last;
-                    %    end
-                    %    chunk = read_cached_array_chunk(ips, idx_m, [ips.dimensions(1), ips.dimensions(2), dr, ips.dimensions(4)]);
-                    %end
-                    %DEBUG: %if (~isequal(ips_curr,ips(:,:,r,currt))) error('Failed matrix equality test when testing caching functions.'); end
-                    %currips = currprojcoeffs*(chunk(:,:,idx_d,currt) * ic);
-                    
                     currips = currprojcoeffs*(read_cached_array(ips, [0,0,r,currt])*ic);
                     
 %                   % Calculate scale and adjust  
@@ -133,41 +110,22 @@ for c = 1:numctf
                 projinds(curriminds(i)) = inds(pind(i));
                 rotinds(curriminds(i)) = rind(i);
                 transinds(curriminds(i)) = currtrans(tind(i));
-                % scales(curriminds(i)) = currprojcoeffs(pind,:)*ips(:,:,rind,currtrans(tind))*imcoeffs(curriminds(i),:)' / projnormsc(pind) / 2;
             end
             
-            % sort by rind so that to have sequensial access to ips
+            % to calculate scales, need to sort by rind so that to have sequensial access to ips
             [s_rind, i_rind] = sort(rind);
             s_pind = pind(i_rind);
             s_tind = tind(i_rind);
             s_curriminds = curriminds(i_rind);
-            %dr = ceil(nr/nc);
-            %chunk = read_cached_array_chunk(ips, 1, [ips.dimensions(1), ips.dimensions(2), dr, ips.dimensions(4)]);
             for i = 1:numcurrim
                 scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:)* read_cached_array(ips, [0, 0, s_rind, currtrans(s_tind) ]) *...
                     imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2; 
-                
-                % Calculate scale that gave the min ssd
-                %r = s_rind(i);
-                %idx_m = ceil(r/dr);
-                %idx_d = mod(r,dr);
-                %if (idx_d == 0)
-                %    idx_d = dr;
-                %end
-                %if ( idx_m > ceil((r-1)/dr) && r > 1)
-                %    if (idx_m == numChunks)
-                %        dr = dr_last;
-                %    end
-                %    chunk = read_cached_array_chunk(ips, idx_m, [ips.dimensions(1), ips.dimensions(2), dr, ips.dimensions(4)]);
-                %end
-                %scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:)* chunk(:,:,idx_d,currtrans(s_tind(i))) *...
-                %    imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2;  
             end
             
             clear ssds currssds currprojnorms ic currimnorms
         end 
-        progress_bar(st, numstu);
     end
+    progress_bar(c, numctf);
 end
 fprintf('\n');
 
