@@ -1,6 +1,14 @@
 function chunk_x = read_cached_array(cacharr, indices)
 % example of indices = [0, 0, 1, 1]; % zero stands for ':'
 
+% check the indices are in the right dimension range
+if (indices(3) > cacharr.dimensions(3) || indices(4) > cacharr.dimensions(4))
+    fprintf('Exceeding index: %f out of %f and %f out of %f \n', indices(3), cacharr.dimensions(3), indices(4), cacharr.dimensions(4));
+    fprintf('Other caching data: size(data) = [%i %i %i %i]', size(cacharr.data,1), size(cacharr.data, 2),...
+        size(cacharr.data,3), size(cacharr.data,4));
+    error('Index exceeds matrix dimensions.');
+end
+
 if (cacharr.caching == 1)
     nc = cacharr.nchunks; % number of chunks
     ix = cacharr.broken; % idx of broken dimension
