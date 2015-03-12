@@ -1,6 +1,12 @@
 function chunk_x = read_cached_array(cacharr, indices)
 % example of indices = [0, 0, 1, 1]; % zero stands for ':'
 
+% check indices have the right dimension
+if (size(indices, 2) > size(cacharr.dimensions,2))
+    warning('indices length is too large, the read data might be not correct');
+    fprintf('indices size: %i\n', size(indices, 2));
+end
+
 % check the indices are in the right dimension range
 if (indices(3) > cacharr.dimensions(3) || indices(4) > cacharr.dimensions(4))
     fprintf('Exceeding index: %f out of %f and %f out of %f \n', indices(3), cacharr.dimensions(3), indices(4), cacharr.dimensions(4));
