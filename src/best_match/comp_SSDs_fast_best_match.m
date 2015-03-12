@@ -33,7 +33,7 @@ for c = 1:numctf
     % For each set of translations
     for st = 1:numstu
         
-        currtrans = searchtransu(st,:);
+        currtrans = searchtransu(st,:);        
         sinds = find(ismember(searchtrans(cis,:),currtrans,'rows'));
         
         % Determine number of images to process per batch for handling limited memory
@@ -118,7 +118,7 @@ for c = 1:numctf
             s_tind = tind(i_rind);
             s_curriminds = curriminds(i_rind);
             for i = 1:numcurrim
-                scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:)* read_cached_array(ips, [0, 0, s_rind, currtrans(s_tind) ]) *...
+                scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:)* read_cached_array(ips, [0, 0, s_rind, currtrans(s_tind(i)) ]) *...
                     imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2; 
             end
             
