@@ -3,6 +3,8 @@
 % then read chunk by chunk
 % return the matrix chunk
 
+addpath(fullfile(cd, '../src/caching'));
+
 num_chunks = 20;
 type = 'single';
 carr = create_cached_array([1000, 300, 360, 150], 'cache', type, num_chunks, 3, 1);
