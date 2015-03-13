@@ -30,8 +30,8 @@ if caching == -1 % caching is determined automatically
         end
     elseif (isequal(archstr(1:5),'glnxa')) % if linux
         [r w] = unix('free | grep Mem');
-        stats = str2double(regexpr(w, '[0-9]*', 'match'));
-        memsize = stats(1); % bytes
+        stats = str2double(regexp(w, '[0-9]*', 'match'));
+        %memsize = stats(1); % bytes
         freemem = stats(3) + stats(end); % bytes
         if (freemem > reqmem)
             fprintf('No caching will be used, there is enough memory \n');
