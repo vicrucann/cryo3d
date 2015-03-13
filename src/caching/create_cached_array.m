@@ -16,16 +16,32 @@ if caching == -1 % caching is determined automatically
     for i = 1:length(size)
         reqmem = reqmem*size(i); % total size of variable in bytes
     end
-    reqmem = 1.2*reqmem; % assume it's 20% more than required to allow for other side variables
+    reqmem = 1.3*reqmem; % assume it's 30% more than required to allow for other side variables
     
-    user = memory;
-    if (user.MaxPossibleArrayBytes > reqmem)
-        fprintf('No caching will be used, there is enough memory \n');
-        caching = 0;
-    else
-        warning('Not enough memory: caching will be used. Processing time will be slower. ');
-        caching = 1;
-    end
+    archstr = computer('arch');
+    archstr = archstr(1:3);
+    if (isequal(archstr, 'win')) % if it's windows
+        user = memory;
+        if (user.MaxPossibleArrayBytes > reqmem)
+            fprintf('No caching will be used, there is enough memory \n');
+            caching = 0;
+        else
+            warning('Not enough memory: caching will be used. Processing time will be slower. ');
+            caching = 1;
+        end
+    else % if linux
+        [r w] = unix('free | grep Mem');
+        stats = str2double(regexpr(w, '[0-9]*', 'match'));
+        memsize = stats(1); % bytes
+        freemem = stats(3) + stats(end); % bytes
+        if (freemem > reqmem)
+            fprintf('No caching will be used, there is enough memory \n');
+            caching = 0;
+        else
+            warning('Not enough memory: caching will be used. Processing time will be slower. ');
+            caching = 1;
+        end
+    end    
 end
 
 if (caching == 0)
