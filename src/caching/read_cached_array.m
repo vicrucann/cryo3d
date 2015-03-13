@@ -1,17 +1,23 @@
 function chunk_x = read_cached_array(cacharr, indices)
 % example of indices = [0, 0, 1, 1]; % zero stands for ':'
+% so it would be the same as cacharr(:, :, 1, 1);
 
 % check indices have the right dimension
-if (size(indices, 2) > size(cacharr.dimensions,2))
-    warning('indices length is too large, the read data might be not correct');
+if (size(indices, 2) ~= size(cacharr.dimensions,2))
     fprintf('indices size: %i\n', size(indices, 2));
+    error('Indices length is too large or too small, the read data might be not correct');
 end
 
 % check the indices are in the right dimension range
-if (indices(3) > cacharr.dimensions(3) || indices(4) > cacharr.dimensions(4))
-    fprintf('Exceeding index: %f out of %f and %f out of %f \n', indices(3), cacharr.dimensions(3), indices(4), cacharr.dimensions(4));
-    fprintf('Other caching data: size(data) = [%i %i %i %i]', size(cacharr.data,1), size(cacharr.data, 2),...
-        size(cacharr.data,3), size(cacharr.data,4));
+if (sum(indices(:) > cacharr.dimensions(:)) > 0)
+%if (indices(3) > cacharr.dimensions(3) || indices(4) > cacharr.dimensions(4))
+    fprintf('Exceeding indices:'); 
+    fprintf('%i ', indices(:)); 
+    fprintf('\nOutof: ');
+    fprintf('%i ', cacharr.dimensions(:));
+    fprintf('\n');
+    fprintf('Other caching data: size(data) = ');
+    fprintf('%i ', size(cacharr.data));
     error('Index exceeds matrix dimensions.');
 end
 
@@ -31,11 +37,31 @@ if (cacharr.caching == 1)
         if (idx_chunk == nc)
             dx = nx-(nc-1)*dx; % the last chunk might have different size in broken dimension
         end
-        dims = [cacharr.dimensions(1), cacharr.dimensions(2), dx, cacharr.dimensions(4)];
+        %dims = [cacharr.dimensions(1), cacharr.dimensions(2), dx, cacharr.dimensions(4)];
+        dims = cacharr.dimensions;
+        dims(ix) = dx; % broken dimension has different size than original array
         cacharr.data = reshape(mm.Data, dims);
     end
-    
-    chunk_x = cacharr.data(:,:,idx_data, indices(4)); % in order to create more general chunk reader, try to use eval function here
+    ind = indices;
+    ind(ix) = idx_data;
+    expr_ind = ind2str(ind);
+    chunk_x = eval(['cacharr.data' expr_ind  ';']); % general, N-dimensional array
+    %chunk_x = cacharr.data(:,:,idx_data, indices(4)); % in order to create more general chunk reader, try to use eval function here
 else
-    chunk_x = cacharr.data(:,:,indices(3), indices(4));
+    expr_ind = ind2str(indices);
+    chunk_x = eval(['cacharr.data' expr_ind ';']);
+    %chunk_x = cacharr.data(:,:,indices(3), indices(4));
+end
+end
+
+function expr = ind2str(indices)
+expr = '(';
+for i = 1:size(indices,2)
+    if (indices(i) == 0) % take all elements - ':'    
+        expr = expr + ':,';
+    else % write down the index number
+        expr = expr + [num2str(indices(i)) ','];
+    end
+end
+expr(end) = ')'; % get rid of the comma at the end and close the braket
 end
