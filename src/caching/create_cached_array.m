@@ -19,8 +19,7 @@ if caching == -1 % caching is determined automatically
     reqmem = 1.3*reqmem; % assume it's 30% more than required to allow for other side variables
     
     archstr = computer('arch');
-    archstr = archstr(1:3);
-    if (isequal(archstr, 'win')) % if it's windows
+    if (isequal(archstr(1:3), 'win')) % if it's windows
         user = memory;
         if (user.MaxPossibleArrayBytes > reqmem)
             fprintf('No caching will be used, there is enough memory \n');
@@ -29,7 +28,7 @@ if caching == -1 % caching is determined automatically
             warning('Not enough memory: caching will be used. Processing time will be slower. ');
             caching = 1;
         end
-    else % if linux
+    elseif (isequal(archstr(1:5),'glnxa')) % if linux
         [r w] = unix('free | grep Mem');
         stats = str2double(regexpr(w, '[0-9]*', 'match'));
         memsize = stats(1); % bytes
@@ -41,6 +40,8 @@ if caching == -1 % caching is determined automatically
             warning('Not enough memory: caching will be used. Processing time will be slower. ');
             caching = 1;
         end
+    else % mac?
+        error('Unrecognized or unsupported architecture');
     end    
 end
 
