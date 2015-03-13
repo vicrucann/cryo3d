@@ -42,15 +42,15 @@ if (cacharr.caching == 1)
         dims(ix) = dx; % broken dimension has different size than original array
         cacharr.data = reshape(mm.Data, dims);
     end
-    ind = indices;
-    ind(ix) = idx_data;
-    expr_ind = ind2str(ind);
-    chunk_x = eval(['cacharr.data' expr_ind  ';']); % general, N-dimensional array
-    %chunk_x = cacharr.data(:,:,idx_data, indices(4)); % in order to create more general chunk reader, try to use eval function here
+    %ind = indices;
+    %ind(ix) = idx_data;
+    %expr_ind = ind2str(ind);
+    %chunk_x = eval(['cacharr.data' expr_ind  ';']); % general, N-dimensional array
+    chunk_x = cacharr.data(:,:,idx_data, indices(4)); % in order to create more general chunk reader, try to use eval function here
 else
-    expr_ind = ind2str(indices);
-    chunk_x = eval(['cacharr.data' expr_ind ';']);
-    %chunk_x = cacharr.data(:,:,indices(3), indices(4));
+    %expr_ind = ind2str(indices);
+    %chunk_x = eval(['cacharr.data' expr_ind ';']);
+    chunk_x = cacharr.data(:,:,indices(3), indices(4));
 end
 end
 
