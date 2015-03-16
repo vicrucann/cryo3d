@@ -42,11 +42,11 @@ if (cacharr.caching == 1)
         dims(ix) = dx; % broken dimension has different size than original array
         cacharr.data = reshape(mm.Data, dims);
     end
-    %ind = indices;
-    %ind(ix) = idx_data;
-    %expr_ind = ind2str(ind);
-    %chunk_x = eval(['cacharr.data' expr_ind  ';']); % general, N-dimensional array
-    chunk_x = cacharr.data(:,:,idx_data, indices(4)); % in order to create more general chunk reader, try to use eval function here
+    ind = indices;
+    ind(ix) = idx_data;
+    expr_ind = ind2str(ind);
+    chunk_x = eval(['cacharr.data' expr_ind  ';']); % general, N-dimensional array
+    %chunk_x = cacharr.data(:,:,idx_data, indices(4)); % in order to create more general chunk reader, try to use eval function here
 else
     expr_ind = ind2str(indices);
     chunk_x = eval(['cacharr.data' expr_ind ';']);
@@ -58,9 +58,9 @@ function expr = ind2str(indices)
 expr = '(';
 for i = 1:size(indices,2)
     if (indices(i) == 0) % take all elements - ':'    
-        strcat(expr, ':,');
+        expr = strcat(expr, ':,');
     else % write down the index number
-        strcat(expr, [num2str(indices(i)) ',']);
+        expr = strcat(expr, [num2str(indices(i)) ',']);
     end
 end
 expr(end) = ')'; % get rid of the comma at the end and close the braket
