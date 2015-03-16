@@ -5,3 +5,6 @@
 
 # Ignore any temporary files
 *.asv
+
+# Ignore main script file since it changes for each new database / parameter
+/script/cryo3d.m
