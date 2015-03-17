@@ -7,4 +7,4 @@
 *.asv
 
 # Ignore main script file since it changes for each new database / parameter
-/script/cryo3d.m
+script/cryo3d.m
