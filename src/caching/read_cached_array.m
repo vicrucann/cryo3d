@@ -1,3 +1,9 @@
+% Part of caching function data structure
+% Allows to avoid Matlab out of memory error by caching a large array into
+% several files on hard disk and then reading the necessary chunks using
+% memmapfile Matlab function
+% Victoria Rudakova 2015, victoria.rudakova(at)yale.edu
+
 function chunk_x = read_cached_array(cacharr, indices)
 % example of indices = [0, 0, 1, 1]; % zero stands for ':'
 % so it would be the same as cacharr(:, :, 1, 1);
@@ -54,6 +60,8 @@ else
 end
 end
 
+% Converts array of indices of form [0 0 2 0] into string '(:,:,2,:)' for
+% further eval usage
 function expr = ind2str(indices)
 expr = '(';
 for i = 1:size(indices,2)

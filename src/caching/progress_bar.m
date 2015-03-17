@@ -9,7 +9,7 @@ perc_b = ceil(pb*tot);
 perc_s = ceil(ps*tot);
 
 if (mod(cit, perc_b) == 0)
-    fprintf('%i', perc_b);
+    fprintf('%i', ceil(cit/tot*100));
 elseif (mod(cit, perc_s) == 0)
     fprintf('.');
 end

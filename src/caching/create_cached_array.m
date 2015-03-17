@@ -1,3 +1,9 @@
+% Part of caching function data structure
+% Allows to avoid Matlab out of memory error by caching a large array into
+% several files on hard disk and then reading the necessary chunks using
+% memmapfile Matlab function
+% Victoria Rudakova 2015, victoria.rudakova(at)yale.edu
+
 function cacharr = create_cached_array(size, path_cache, type, num_chunks, idx_broken, caching)
 
 if ~exist(path_cache)
@@ -10,13 +16,20 @@ end
 if caching == -1 % caching is determined automatically
     if isequal(type, 'single')
         reqmem = 4; % bytes for single
-    else % have to fulfill to add more data types and their sizes
-        reqmem = 8;
+    else
+        reqmem = 8; % assume it's double otherwise
     end
+    chunkmem = reqmem;
     for i = 1:length(size)
         reqmem = reqmem*size(i); % total size of variable in bytes
+        if (i ~= idx_broken)
+            chunkmem = chunkmem*size(i);
+        else
+            chunkmem = chunkmem*ceil(size(idx_broken)/num_chunks);
+        end
     end
-    reqmem = 1.3*reqmem; % assume it's 30% more than required to allow for other side variables
+    
+    reqmem = 1.5*(2*chunkmem+reqmem); % assume it's 20% more than required to allow for other side variables
     
     archstr = computer('arch');
     if (isequal(archstr(1:3), 'win')) % if it's windows
@@ -51,5 +64,9 @@ else
     data = 0;
 end
 
-cacharr = struct('dimensions', size, 'path', [path_cache '\/'], 'type', type, 'nchunks', num_chunks, 'broken', idx_broken, ...
+if (~strcmp(path_cache(end), '\') && ~strcmp(path_cache(end), '/'))
+    path_cache = [path_cache '\/'];
+end
+
+cacharr = struct('dimensions', size, 'path', path_cache, 'type', type, 'nchunks', num_chunks, 'broken', idx_broken, ...
     'caching', caching, 'data', data, 'currchunk', 1);
