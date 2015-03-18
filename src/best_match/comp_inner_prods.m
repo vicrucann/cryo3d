@@ -6,7 +6,8 @@
 % ips_cache output variable contains the list of cache files
 % by default the files are saved in the current directory in 'cache\' folder
 
-function ips_cache = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching)
+function ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching)
+%function ips_cache = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching)
 
 projbasis3d_g = gpuArray(single(reshape(projbasis,[numpixsqrt, numpixsqrt, numprojcoeffs])));
 imbasis_g = gpuArray(imbasis)';
@@ -39,8 +40,11 @@ else            % Rotations + translations
     fprintf('Number of GPU batches: %i\n', numbatches);
     fprintf('Total memory size of all batches in Gb, less than: %i\n', floor(neededmem/1024^3));
     
-    ips_cache = create_cached_array([numprojcoeffs,numimcoeffs,numrot,numtrans], ...
-        'cache', 'single', numbatches, 3, caching);
+    %ips_cache = create_cached_array([numprojcoeffs,numimcoeffs,numrot,numtrans], ...
+    %    'cache', 'single', numbatches, 3, caching);
+    ips = Cacharr([numprojcoeffs,numimcoeffs,numrot,numtrans],...
+        'cache', 'single', numbatches, 3, caching, 'ips');
+    
     fprintf('Percent completed: ');
     
     for b = 1:numbatches
@@ -90,7 +94,8 @@ else            % Rotations + translations
         ips_g = 2*ips_g;
         
         chunk = single(gather(ips_g));
-        ips_cache = write_cached_array_chunk(ips_cache, chunk, b);
+        %ips_cache = write_cached_array_chunk(ips_cache, chunk, b);
+        ips.write_cached_array_chunk(chunk, b);
         clear chunk;
         
         perc = round(b/numbatches*100);
