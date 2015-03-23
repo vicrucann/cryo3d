@@ -11,18 +11,19 @@ classdef Cacharr < handle
     %   2015 victoria.rudakova(at)yale.edu
     
     properties (GetAccess = 'public', SetAccess = 'private')
-        dimension;
-        path;
-        type;
-        nchunks;
-        broken;
-        caching = -1;
-        data;
-        currchunk = 1;
+        dimension; % size of the array
+        path; % path where variables are saved
+        type; % data type, e.g. double, int
+        nchunks; % total number of chunks
+        broken; % index of a broken dimension
+        caching = -1; % 1 caching ON, 0 caching OFF, -1 automatic mode
+        data; % contains either first chunk or whole data if no brakage was performed
+        currchunk = 1; % pointed on chunk index which is stored in data currently
         vname = 'tmp';
     end
     
     methods
+        % constructor
         function carr = Cacharr(size, path_cache, type, num_chunks, idx_broken, caching, var_name)
             if ~exist(path_cache)
                 mkdir(path_cache);
@@ -86,6 +87,7 @@ classdef Cacharr < handle
             carr.vname = var_name;
         end
         
+        % write
         function carr = write_cached_array_chunk(carr, chunk, idx_chunk) % carr.write_cached_array_chunk(chunk, idx_chunk)
             if (carr.caching == 1)
                 fname = [carr.vname '_' num2str(idx_chunk) '.dat'];
@@ -114,6 +116,7 @@ classdef Cacharr < handle
             end
         end
         
+        % read
         function chunk_x = read_cached_array(carr, indices)
             % example of indices = [0, 0, 1, 1]; % zero stands for ':'
             % so it would be the same as cacharr(:, :, 1, 1);
