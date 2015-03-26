@@ -127,10 +127,10 @@ for c = 1:numctf
             
             clear ssds currssds currprojnorms ic currimnorms
         end 
+        progress_bar(st, numstu);
     end
-    progress_bar(c, numctf);
+    fprintf('\n');
 end
-fprintf('\n');
 
 scales(scales < minscale) = minscale;
 scales(scales > maxscale) = maxscale;

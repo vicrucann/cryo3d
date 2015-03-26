@@ -25,10 +25,11 @@ classdef Cacharr < handle
     methods
         % constructor
         function carr = Cacharr(size, path_cache, type, num_chunks, idx_broken, caching, var_name)
+            path_cache = path_corrected(path_cache);
             if ~exist(path_cache)
                 mkdir(path_cache);
             else
-                delete([path_cache '\/*.dat']);
+                delete([path_cache var_name '*.dat']);
                 warning('Cache folder has been cleared from previous cache data.');
             end
             
@@ -69,9 +70,9 @@ classdef Cacharr < handle
                     error('Unrecognized or unsupported architecture');
                 end
             end
-            if (~strcmp(path_cache(end), '\') && ~strcmp(path_cache(end), '/'))
-                path_cache = [path_cache '\/'];
-            end
+            %if (~strcmp(path_cache(end), '\') && ~strcmp(path_cache(end), '/'))
+            %    path_cache = [path_cache '\/'];
+            %end
             
             if (caching == 0)
                 carr.data = zeros(size, type);
@@ -211,5 +212,20 @@ for i = 1:size(indices,2)
     end
 end
 expr(end) = ')'; % get rid of the comma at the end and close the braket
+end
+
+function path_platform = path_corrected(path)
+archstr = computer('arch');
+if (strcmp(path(end), '\') || strcmp(path(end), '/'))
+    path = path(1:end-1);
+end
+path_platform = path;
+if (isequal(archstr(1:3), 'win')) % Windows
+    path_platform = [path_platform '\'];
+elseif (isequal(archstr(1:5),'glnxa')) % Linux
+    path_platform = [path_platform '/'];
+else % other
+    error('Unrecognized or unsupported architecture');
+end
 end
 
