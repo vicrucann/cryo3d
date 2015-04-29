@@ -174,7 +174,13 @@ classdef Cacharr < handle
                 %chunk_x = cacharr.data(:,:,indices(3), indices(4));
             end
              expr_ind = ind2str_rd(ind);
-             chunk_x = eval(['carr.data' expr_ind  ';']); % general, N-dimensional array
+             try 
+                 chunk_x = eval(['carr.data' expr_ind  ';']); % general, N-dimensional array
+             catch
+                 fprintf('indexing calculation failed\n');
+                 fprintf('debug');
+                 error('Matrix dimension problem');
+             end
         end
         
     end 
