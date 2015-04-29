@@ -151,7 +151,7 @@ classdef Cacharr < handle
                 if (idx_data == 0)
                     idx_data = dx;
                 end
-                if (idx_chunk > carr.currchunk && idx_chunk > 1)
+                if (idx_chunk ~= carr.currchunk)
                     mm = memmapfile([carr.path carr.vname '_' num2str(idx_chunk) '.dat'], 'Format', carr.type);
                     carr.currchunk = idx_chunk;
                     if (idx_chunk == nc)
