@@ -206,9 +206,9 @@ function expr = ind2str_rd(indices)
 expr = '(';
 for i = 1:size(indices,2)
     if (indices(i) == 0) % take all elements - ':'
-        expr = strcat(expr, ':,');
+        expr = sprintf('%s%c,', expr, ':'); %strcat(expr, ':,');
     else % write down the index number
-        expr = strcat(expr, [num2str(indices(i)) ',']);
+        expr = sprintf('%s%i,', expr, indices(i)); %strcat(expr, [num2str(indices(i)) ',']);
     end
 end
 expr(end) = ')'; % get rid of the comma at the end and close the braket
