@@ -100,7 +100,7 @@ else            % Rotations + translations
         
         chunk = single(gather(ips_g));
         ips.write_cached_array_chunk(chunk, b);
-        clear chunk;
+        %clear chunk;
         
         perc = round(b/numbatches*100);
         fprintf('%u ', perc);

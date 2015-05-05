@@ -86,7 +86,7 @@ for c = 1:numctf
                     % First calculate the inner products between
                     % projections and current images
                     currips = currprojcoeffs*(ips.read_cached_array([0,0,r,currt])*ic);
-                    % currips = currprojcoeffs*(read_cached_array(ips, [0,0,r,currt])*ic);
+                    %currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
                     
 %                   % Calculate scale and adjust  
                     s = currips ./ currprojnorms / 2;
@@ -111,6 +111,10 @@ for c = 1:numctf
                 projinds(curriminds(i)) = inds(pind(i));
                 rotinds(curriminds(i)) = rind(i);
                 transinds(curriminds(i)) = currtrans(tind(i));
+                
+                % Calculate scale that gave the min ssd
+                %scales(curriminds(i)) = currprojcoeffs(pind(i),:)*ips(:,:,rind(i),currtrans(tind(i)))*...
+                %    imcoeffs(curriminds(i),:)' / projnormsc(pind(i)) / 2;
             end
             
             % to calculate scales, need to sort by rind so that to have sequensial access to ips
@@ -118,9 +122,7 @@ for c = 1:numctf
             s_pind = pind(i_rind);
             s_tind = tind(i_rind);
             s_curriminds = curriminds(i_rind);
-            for i = 1:numcurrim
-                %scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:)* read_cached_array(ips, [0, 0, s_rind(i), currtrans(s_tind(i)) ]) *...
-                %    imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2; 
+            for i = 1:numcurrim 
                 scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:)* ips.read_cached_array([0, 0, s_rind(i), currtrans(s_tind(i)) ]) *...
                     imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2; 
             end
