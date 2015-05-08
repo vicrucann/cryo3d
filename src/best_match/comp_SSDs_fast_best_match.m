@@ -67,22 +67,21 @@ for c = 1:numctf
             currprojnorms = projnormsc(:,ones(numcurrim,1)); 
             ic = imcoeffs(curriminds,:)';
             
-            % For each translation in the current search set
-            for t = 1:numst
+            % For each rotation
+            for r = 1:numrot
                 
-                % Check if translation exists
-                currt = currtrans(t);
-                if currt < 1
-                    continue;
-                end
+                % For each translation in the current search set
+                for t = 1:numst
+                    % Check if translation exists
+                    currt = currtrans(t);
+                    if currt < 1
+                        continue;
+                    end
                 
-                % Set up the current image norms
-                currimnorms = imnorms(currt,curriminds);
-                currimnorms = currimnorms(onesprojc,:);
+                    % Set up the current image norms
+                    currimnorms = imnorms(currt,curriminds);
+                    currimnorms = currimnorms(onesprojc,:);
                 
-                % For each rotation
-                for r = 1:numrot
-                    
                     % First calculate the inner products between
                     % projections and current images
                     currips = currprojcoeffs*(ips.read_cached_array([0,0,r,currt])*ic);
