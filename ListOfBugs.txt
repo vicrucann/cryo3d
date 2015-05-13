@@ -1,1 +1,0 @@
-1. When running in Linux, the caching path variable "cache\/" can't be user for fopen -> replace the ammendment if "\/" depending on detected architecture.
