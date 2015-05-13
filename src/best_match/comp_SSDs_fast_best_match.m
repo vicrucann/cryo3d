@@ -29,49 +29,45 @@ for c = 1:numctf
     cis = find(ctfinds == c)';
     searchtransu = unique(searchtrans(cis,:),'rows');
     numstu = size(searchtransu,1);
-    
-    % For each rotation
-    for r = 1:numrot
+   
+    % For each set of translations
+    for st = 1:numstu
+        currtrans = searchtransu(st,:);
+        sinds = find(ismember(searchtrans(cis,:),currtrans,'rows'));
         
-        % For each set of translations
-        for st = 1:numstu
+        % Determine number of images to process per batch for handling limited memory
+        numsinds = length(sinds);
+        numbatches = ceil((numprojc*numsinds*numrot*numst + numprojc*numrot*numst)*4/1048576 / (maxmem - currmem - 550));
+        if numbatches < 1
+            numbatches = numsinds;
+        elseif numbatches > 1
+            numbatches = numbatches + 1; %%%% Changed to deal with memory
+        end
+        batchsize = ceil(numsinds / numbatches);
+        numbatches = ceil(numsinds / batchsize);
+        
+        % For each batch of images
+        for b = 1:numbatches
             
-            currtrans = searchtransu(st,:);
-            sinds = find(ismember(searchtrans(cis,:),currtrans,'rows'));
-            
-            % Determine number of images to process per batch for handling limited memory
-            numsinds = length(sinds);
-            numbatches = ceil((numprojc*numsinds*numrot*numst + numprojc*numrot*numst)*4/1048576 / (maxmem - currmem - 550));
-            if numbatches < 1
-                numbatches = numsinds;
-            elseif numbatches > 1
-                numbatches = numbatches + 1; %%%% Changed to deal with memory
-            end
-            batchsize = ceil(numsinds / numbatches);
-            numbatches = ceil(numsinds / batchsize);
-            
-            % For each batch of images
-            for b = 1:numbatches
-                
-                % Get the indices of the images
-                if b == numbatches
-                    curriminds = cis(sinds((b-1)*batchsize+1:end));
-                else
-                    if (b*batchsize > length(sinds))
-                        ind = b*batchsize
-                        length(sinds)
-                    end
-                    curriminds = cis(sinds((b-1)*batchsize+1:b*batchsize));
+            % Get the indices of the images
+            if b == numbatches
+                curriminds = cis(sinds((b-1)*batchsize+1:end));
+            else
+                if (b*batchsize > length(sinds))
+                    ind = b*batchsize
+                    length(sinds)
                 end
-                numcurrim = length(curriminds);
-                
-                % Setup ssds matrix, rep proj norms, and get current imcoeffs
-                ssds = inf(numprojc,numcurrim,numrot,numst,'single');
-                currprojnorms = projnormsc(:,ones(numcurrim,1));
-                ic = imcoeffs(curriminds,:)';
-                
-                
-                
+                curriminds = cis(sinds((b-1)*batchsize+1:b*batchsize));
+            end
+            numcurrim = length(curriminds);
+            
+            % Setup ssds matrix, rep proj norms, and get current imcoeffs
+            ssds = inf(numprojc,numcurrim,numrot,numst,'single');
+            currprojnorms = projnormsc(:,ones(numcurrim,1));
+            ic = imcoeffs(curriminds,:)';
+            
+            % For each rotation
+            for r = 1:numrot
                 % For each translation in the current search set
                 for t = 1:numst
                     % Check if translation exists
@@ -130,7 +126,7 @@ for c = 1:numctf
             
             clear ssds currssds currprojnorms ic currimnorms
         end
-        progress_bar(r, numrot);
+        progress_bar(st, numstu);
     end
     fprintf('\n');
 end
