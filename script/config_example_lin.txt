@@ -1,24 +1,27 @@
+%% Most frequntly edited parameters:
+
 pathout = '/home/vicru/temp/1/';
 pathdata = '/home/tagarelab-data/20150205_sdp/';
 caching = 0; % 1 for caching on, 0 caching off, -1 automatic caching
-dtheta = 6;
+pathcache = '/home/vicru/temp/1/cache/';
+dtheta = 12;
 
 maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
 maxmem = 50624;
 
 numthreads = 18;
-rotstep = 3;
-transmax = 6;
+rotstep = 6;
+transmax = 4;
 
 %% Preprocessing
 
-structfile = [pathdata 'run1_class001.mrc']; %'run1_class001.mrc'];
-stackfile = [pathdata 'stackfile_selected_1.mrcs'];
+structfile = 'run1_class001.mrc'; %'run1_class001.mrc'];
+stackfile = 'stackfile_selected_1.mrcs';
 ctffile = [];
 lpf = 30; % low-pass filter
-sigma = 1; % width of Gaussian
-ds = 2; % downsampling of initial
-downsample = 2; % image
+sigm = 1; % width of Gaussian
+ds_ini = 2; % downsampling of initial
+ds_img = 2; % image
 
 %% Best Match
 

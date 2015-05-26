@@ -9,7 +9,7 @@
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 % caching: 1 to turn on, 0 turns off, -1 automatic caching
 
-function passed = best_match(pathout, configfile, caching)
+function passed = best_match(pathout, configfile, caching, pathcache)
 % Configure parameters
 
 if (nargin < 3)
@@ -243,7 +243,7 @@ for run = 1:numruns
         
         % Compute inner products
         disp('Calc inner products'); pause(0.05); tic;
-        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching);
+        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache);
         toc;
         
         % Calculate the SSDs to find best projection direction and
