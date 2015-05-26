@@ -1,0 +1,51 @@
+pathout = 'G:\workspace\db-hongwei\dselected_1\';
+pathdata = 'G:\20150205_sdp\';
+caching = 0; % 1 for caching on, 0 caching off, -1 automatic caching
+dtheta = 6;
+
+maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
+maxmem = 50624;
+
+numthreads = 18;
+rotstep = 3;
+transmax = 6;
+
+%% Preprocessing
+
+structfile = [pathdata 'run1_class001.mrc']; %'run1_class001.mrc'];
+stackfile = [pathdata 'stackfile_selected_1.mrcs'];
+ctffile = [];
+lpf = 30; % low-pass filter
+sigma = 1; % width of Gaussian
+ds = 2; % downsampling of initial
+downsample = 2; % image
+
+%% Best Match
+
+% Parameters for only using part of the data
+substep = 0; % subsample number of images
+reconhalf = 0; % 0 or 1, take every other
+reconstartind = 0; % 0-all, 1-odd 2-even
+
+% Initial Model and Related Parameters
+pf = 1;
+pixfromedge = 4; % for spherical mask, >0
+
+% System Parameters
+dispflag = 0;
+
+% Algorithm parameters
+f = 0.0001; % threshold for scree test
+numruns = 2; %outer loop
+maxnumiter = 10; % inner loop
+convtol = 0.01; % convergence tol for innter loop, percentage of change 
+normprojint = 1; % 0 or 1, normalize initial structure intensity scale or not
+
+% Transformation Search Parameters
+rotstart = 0.5; % better if doesn't start from 0
+rotend = 359.9;
+transdelta = 1; % step for translation search, in pixels
+transwidth = 1; % neiborhood size of local translation search
+
+% Output parameters
+alignims = 1; % 0 or 1, save aligned images or not

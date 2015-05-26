@@ -10,3 +10,4 @@
 script/cryo3d.m
 *.orig
 *~
+*.swap
