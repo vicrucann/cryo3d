@@ -63,7 +63,7 @@ ipaddrs = ['130.132.104.236' ' ' '172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.
 login = 'cryo';
 
 % workplace directory on remotes (same for all remotes)
-ppath = '/home/cryo/dop';
+ppath = [pathout 'dop'];
 
 % function matlab name that will be launched on remotes
 remmat = 'mandelbrot';
