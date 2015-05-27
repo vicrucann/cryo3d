@@ -6,7 +6,7 @@
 % ips_cache output variable contains the list of cache files
 % by default the files are saved in the current directory in 'cache\' folder
 
-function ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching)
+function ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache)
 %function ips_cache = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching)
 
 projbasis3d_g = gpuArray(single(reshape(projbasis,[numpixsqrt, numpixsqrt, numprojcoeffs])));
@@ -41,7 +41,7 @@ else            % Rotations + translations
     fprintf('Total memory size of all batches in Gb, less than: %i\n', floor(neededmem/1024^3));
     
     ips = Cacharr([numprojcoeffs,numimcoeffs,numrot,numtrans],...
-        'cache', 'single', numbatches, 3, caching, 'ips');
+        pathcache, 'single', numbatches, 3, caching, 'ips');
     %ips = zeros(numprojcoeffs,numimcoeffs,numrot,numtrans,'single');
     
     fprintf('Percent completed: ');
