@@ -41,51 +41,40 @@ for i=1:len
     if isempty(ind)
         error('No %s specified', s);
     else
-        %if (ischar(C{2}{ind}))
-        %    eval([s '=C{2}{ind}(2:end-1)']);
-        %else
-            eval([s '=C{2}{ind}']);
-        %end        
+        eval([s '=C{2}{ind}']);      
     end
 end
 
-% check for format of pathdata variable
+% check for format of path-like variables
 pathdata = eval(pathdata);
-slash = pathdata(end);
-if (~isequal(slash, '\') && ~isequal(slash, '/'))
-    archstr = computer('arch');
-    if (isequal(archstr(1:3), 'win')) % Windows
-        pathdata = [pathdata '\'];
-    else % Linux
-        pathdata = [pathdata '/'];
-    end
-end
+pathdata = fixslash(pathdata);
 
-% check for format of pathout variable
 pathout = eval(pathout);
 pathout = fixslash(pathout);
 
-% check for format of pathcache variable
-pathcache = eval(pathcache);
-pathcache = fixslash(pathcache);
+ppath = eval(ppath);
+ppath = fixslash(ppath);
 
 resfold = eval(resfold);
 resfold = fixslash(resfold);
 
-%% Preprocessing
-maskfile = eval(maskfile);
+pathcache = eval(pathcache);
+pathcache = fixslash(pathcache);
 
-structfile = init_volume(pathout, structfile, str2num(lpf), str2num(sigm), str2num(ds_ini));
+%% Preprocessing
+
+structfile = init_volume(pathout, eval(structfile), str2num(lpf), str2num(sigm), str2num(ds_ini));
 coordfile = coordinate_axes(pathout, str2num(dtheta));
-imfile = preprocess_images(pathout, stackfile, ctffile, str2num(ds_img));
+imfile = preprocess_images(pathout, eval(stackfile), eval(ctffile), str2num(ds_img));
 
 %% Best Match
 
 % Generate config file
 configfile = generate_config(pathout, imfile, ctffile, str2num(substep), str2num(reconhalf), str2num(reconstartind), ...
-    structfile, coordfile, maskfile, str2num(pf), str2num(pixfromedge), str2num(maxmem), str2num(numthreads), str2num(dispflag),...
-    str2num(f), str2num(numruns), str2num(maxnumiter), str2num(convtol), str2num(normprojint), str2num(rotstart), str2num(rotstep), str2num(rotend), str2num(transmax), str2num(transdelta), str2num(transwidth), ...
-    str2num(alignims));
+    structfile, coordfile, eval(maskfile), str2num(pf), str2num(pixfromedge), str2num(maxmem), str2num(numthreads), str2num(dispflag),...
+    str2num(f), str2num(numruns), str2num(maxnumiter), str2num(convtol), str2num(normprojint), str2num(rotstart), str2num(rotstep), ...
+    str2num(rotend), str2num(transmax), str2num(transdelta), str2num(transwidth), str2num(alignims),...
+    eval(ipaddrs), eval(login), ppath, eval(varmat), str2num(sleeptime), resfold, str2num(printout));
 
 best_match(pathout, configfile, str2num(caching), pathcache);
 end
