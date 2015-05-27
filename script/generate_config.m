@@ -1,7 +1,8 @@
 function outfile = generate_config(pathout, imfile, ctffile, substep, reconhalf, reconstartind, ...
     structfile, coordfile, maskfile, pf, pixfromedge, maxmem, numthreads, dispflag, ...
     f, numruns, maxnumiter, convtol, normprojint, rotstart, rotstep, rotend, transmax, transdelta, transwidth, ...
-    alignims)
+    alignims,...
+    ipaddrs, login, ppath, varmat, sleeptime, resfold, printout)
 %GENERATE_CONFIG Generates txt config file given parameters
 %   Run from cryo3d.m
 
@@ -36,6 +37,14 @@ fprintf(fid, 'transmax = %i\n', transmax);
 fprintf(fid, 'transdelta = %i\n', transdelta);
 fprintf(fid, 'transwidth = %i\n', transwidth);
 fprintf(fid, 'alignims = %i\n', alignims);
+
+fprintf(fid, 'ipaddrs = %s\n', ipaddrs);
+fprintf(fid, 'login = %s\n', login);
+fprintf(fid, 'ppath = %s\n', ppath);
+fprintf(fid, 'varmat = %s\n', varmat);
+fprintf(fid, 'sleeptime = %s\n', sleeptime);
+fprintf(fid, 'resfold = %s\n', resfold);
+fprintf(fid, 'printout = %s\n', printout);
 
 fclose(fid);
 outfile = [pathout fname];
