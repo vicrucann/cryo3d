@@ -3,6 +3,15 @@
 
 function cryo3d(fname)
 
+if nargin < 1
+    archstr = computer('arch');
+    if (isequal(archstr(1:3), 'win')) % Windows
+        fname = 'config_example_win.txt';
+    else
+        fname = 'config_example_lin.txt';
+    end
+end
+
 fileID = fopen(fname);
 if fileID < 0
     disp('Error: Cannot open config file for read');
@@ -22,7 +31,8 @@ cellparams = {'pathout';'pathdata';'caching';'pathcache';'dtheta';'maskfile';'ma
     'structfile';'stackfile';'ctffile';'lpf';'sigm';'ds_ini';'ds_img';...
     'substep';'reconhalf';'reconstartind';'pf';'pixfromedge';'dispflag';...
     'f';'numruns';'maxnumiter';'convtol';'normprojint';...
-    'rotstart';'rotend';'transdelta';'transwidth';'alignims';};
+    'rotstart';'rotend';'transdelta';'transwidth';'alignims';...
+    'ipaddrs';'login';'ppath';'remmat';'varmat';'sleeptime';'resfold';'printout';};
 
 len = length(cellparams);
 for i=1:len
@@ -40,7 +50,7 @@ for i=1:len
 end
 
 % check for format of pathdata variable
-pathdata = pathdata(2:end-1);
+pathdata = eval(pathdata);
 slash = pathdata(end);
 if (~isequal(slash, '\') && ~isequal(slash, '/'))
     archstr = computer('arch');
@@ -52,43 +62,19 @@ if (~isequal(slash, '\') && ~isequal(slash, '/'))
 end
 
 % check for format of pathout variable
-pathout = pathout(2:end-1);
-slash = pathout(end);
-if (~isequal(slash, '\') && ~isequal(slash, '/'))
-    archstr = computer('arch');
-    if (isequal(archstr(1:3), 'win')) % Windows
-        pathout = [pathout '\'];
-    else % Linux
-        pathout = [pathout '/'];
-    end
-end
+pathout = eval(pathout);
+pathout = fixslash(pathout);
 
 % check for format of pathcache variable
-pathcache = pathcache(2:end-1);
-slash = pathcache(end);
-if (~isequal(slash, '\') && ~isequal(slash, '/'))
-    archstr = computer('arch');
-    if (isequal(archstr(1:3), 'win')) % Windows
-        pathcache = [pathout '\'];
-    else % Linux
-        pathcache = [pathout '/'];
-    end
-end
+pathcache = eval(pathcache);
+pathcache = fixslash(pathcache);
+
+resfold = eval(resfold);
+resfold = fixslash(resfold);
 
 %% Preprocessing
+maskfile = eval(maskfile);
 
-structfile = [pathdata structfile(2:end-1)];
-stackfile = [pathdata stackfile(2:end-1)];
-if (length(ctffile)>2)
-    ctffile = [pathdata ctffile(2:end-1)];
-else
-    ctffile = [];
-end
-if length(maskfile)>2
-    maskfile = [pathdata maskfile(2:end-1)];
-else
-    maskfile = [];
-end
 structfile = init_volume(pathout, structfile, str2num(lpf), str2num(sigm), str2num(ds_ini));
 coordfile = coordinate_axes(pathout, str2num(dtheta));
 imfile = preprocess_images(pathout, stackfile, ctffile, str2num(ds_img));
@@ -102,3 +88,16 @@ configfile = generate_config(pathout, imfile, ctffile, str2num(substep), str2num
     str2num(alignims));
 
 best_match(pathout, configfile, str2num(caching), pathcache);
+end
+
+function foldname = fixslash(foldname)
+slash = foldname(end);
+if (~isequal(slash, '\') && ~isequal(slash, '/'))
+    archstr = computer('arch');
+    if (isequal(archstr(1:3), 'win')) % Windows
+        foldname = [foldname '\'];
+    else % Linux
+        foldname = [foldname '/'];
+    end
+end
+end

@@ -1,14 +1,17 @@
+%% Most frequently edited parameters
+
 pathout = 'G:\workspace\db-hongwei\dselected_1\';
 pathdata = 'G:\20150205_sdp\';
 caching = 0; % 1 for caching on, 0 caching off, -1 automatic caching
-dtheta = 6;
+pathcache = 'G:\workspace\db-hongwei\dselected_1\cache\';
+dtheta = 12;
 
 maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
-maxmem = 50624;
+maxmem = 30624;
 
-numthreads = 18;
-rotstep = 3;
-transmax = 6;
+numthreads = 12;
+rotstep = 6;
+transmax = 4;
 
 %% Preprocessing
 
@@ -16,9 +19,9 @@ structfile = [pathdata 'run1_class001.mrc']; %'run1_class001.mrc'];
 stackfile = [pathdata 'stackfile_selected_1.mrcs'];
 ctffile = [];
 lpf = 30; % low-pass filter
-sigma = 1; % width of Gaussian
-ds = 2; % downsampling of initial
-downsample = 2; % image
+sigm = 1; % width of Gaussian
+ds_ini = 2; % downsampling of initial
+ds_img = 2; % image
 
 %% Best Match
 
@@ -49,3 +52,28 @@ transwidth = 1; % neiborhood size of local translation search
 
 % Output parameters
 alignims = 1; % 0 or 1, save aligned images or not
+
+
+%% Bash distributer parameters
+
+% list of IP addresses
+ipaddrs = ['130.132.104.236' ' ' '172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.77'];
+
+% login id which will be used to access the remotes (same for all remotes)
+login = 'cryo';
+
+% workplace directory on remotes (same for all remotes)
+ppath = '/home/cryo/dop';
+
+% function matlab name that will be launched on remotes
+remmat = 'mandelbrot';
+
+% variable name where all the data will be saved to
+varmat = 'mnd';
+
+% pause interval (will be run 50 times)
+sleeptime = 5;
+
+% folder name where results will be copied to
+resfold = [pathout 'dres'];
+printout = 0;
