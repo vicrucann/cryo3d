@@ -84,6 +84,11 @@ if (length(ctffile)>2)
 else
     ctffile = [];
 end
+if length(maskfile)>2
+    maskfile = [pathdata maskfile(2:end-1)];
+else
+    maskfile = [];
+end
 structfile = init_volume(pathout, structfile, str2num(lpf), str2num(sigm), str2num(ds_ini));
 coordfile = coordinate_axes(pathout, str2num(dtheta));
 imfile = preprocess_images(pathout, stackfile, ctffile, str2num(ds_img));
@@ -96,4 +101,4 @@ configfile = generate_config(pathout, imfile, ctffile, str2num(substep), str2num
     str2num(f), str2num(numruns), str2num(maxnumiter), str2num(convtol), str2num(normprojint), str2num(rotstart), str2num(rotstep), str2num(rotend), str2num(transmax), str2num(transdelta), str2num(transwidth), ...
     str2num(alignims));
 
-best_match(pathout, configfile, caching, pathcache);
+best_match(pathout, configfile, str2num(caching), pathcache);

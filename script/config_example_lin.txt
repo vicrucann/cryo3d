@@ -6,7 +6,7 @@ caching = 0; % 1 for caching on, 0 caching off, -1 automatic caching
 pathcache = '/home/vicru/temp/1/cache/';
 dtheta = 12;
 
-maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
+maskfile = 'mask-0031-ds2-0803.mrc'; % [] for no maskfile
 maxmem = 50624;
 
 numthreads = 18;
