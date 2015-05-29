@@ -4,7 +4,7 @@
 % The function is edited to be compatible with caching data structure
 
 function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
-    ipaddrs,login,ppath,varmat,sleeptime,resfold,printout)
+    ipaddrs,login,ppath,varmat,sleeptime,resfold,printout,pathout)
 
 % Initializations
 projinds = -ones(numim,1);
@@ -104,18 +104,33 @@ for c = 1:numctf
             else % if distributor is used
                 remmat = 'comp_SSDs_fast_best_match_wrapper';
                 bashscript = fullfile(pwd,'dhead.sh');
-                % split data
+                % split and save data to files
                 fprintf('\n\nCalculation using remotes \n');
                 numrot_ = ceil(numrot / ncluster);
                 numrot_l = numrot - numrot_*(ncluster-1); % size of last might be different
                 for i=1:ncluster
+                    r_begin = (i-1)*numrot_ + 1;
                     if i~=ncluster
-                        
+                        r_end = numrot_ * i;
                     else % the last cluster
+                        r_end = numrot_l;
                     end
-                    save([varmat int2str(i) '.mat'], 'currtrans_', 'curriminds_', 'onesprojc_', 'currprojcoeffs_', 'ips_', 'ic_',...
-                        'currprojnorms_');
+                    save([varmat int2str(i) '.mat'], 'r_begin', 'r_end', 'numst', 'currtrans', 'curriminds', 'onesprojc', 'currprojcoeffs', 'ips_', 'ic',...
+                        'currprojnorms', 'minscale', 'maxscale');
                 end
+                % launch the bash scripts
+                pathsrc = fullfile(cd, '../src/rshell-mat/');
+                system(['chmod u+x ' bashscript]);
+                if printout
+                    cmdStr = [bashscript ' ' login ' ' ppath ' ' ipaddrs ' ' pathsrc ' ' remmat ' ' pathout ' ' varmat ' ' int2str(sleeptime) ' ' resfold];
+                else
+                    cmdStr = [bashscript ' ' login ' ' ppath ' ' ipaddrs ' '...
+                        pathsrc ' ' remmat ' ' pathout ' ' varmat ' ' int2str(sleeptime) ' ' resfold '>' remmat '.log 2>&1'];
+                end
+                % perform the command
+                system(cmdStr);
+                
+                % merge the results
                 
             end
             
