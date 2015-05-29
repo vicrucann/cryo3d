@@ -115,9 +115,12 @@ for c = 1:numctf
                     else % the last cluster
                         r_end = numrot_l;
                     end
+                    mm = memmapfile([ips.path ips.vname '_' num2str(i) '.dat'], 'Format', ips.type);
+                    ipsi = reshape(mm.Data, ips.dimension);
                     save([varmat int2str(i) '.mat'], 'r_begin', 'r_end', 'numst', 'currtrans', 'curriminds', 'onesprojc', 'currprojcoeffs', 'ips_', 'ic',...
-                        'currprojnorms', 'minscale', 'maxscale');
+                        'currprojnorms', 'minscale', 'maxscale', 'imnorms', 'numprojc', 'numcurrim', 'numrot', 'ipsi');
                 end
+                clear ipsi mm;
                 % launch the bash scripts
                 pathsrc = fullfile(cd, '../src/rshell-mat/');
                 system(['chmod u+x ' bashscript]);
@@ -130,10 +133,16 @@ for c = 1:numctf
                 % perform the command
                 system(cmdStr);
                 
-                % merge the results
-                
+                % merge the results (ssds = [ssdi1 ssdi2 ...])
+                for i=1:ncluster
+                    load([resfold '/' 'result_' varmat int2str(i) '.mat']);
+                    if i~=ncluster
+                        ssds(:,:, (i-1)*numrot_+1 : numrot_ * i, :) = ssdi;
+                    else
+                        ssds(:,:, (i-1)*numrot_ + 1 : numrot_l, :) = ssdi;
+                    end
+                end
             end
-            
                  
             % For each image in the batch
             pind = zeros(1,numcurrim);
