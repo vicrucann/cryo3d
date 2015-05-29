@@ -9,7 +9,8 @@
 % configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
 % caching: 1 to turn on, 0 turns off, -1 automatic caching
 
-function passed = best_match(pathout, configfile, caching, pathcache)
+function passed = best_match(pathout, configfile, caching, pathcache, ...
+    ipaddrs,login,ppath,varmat,sleeptime,resfold,printout)
 % Configure parameters
 
 if (nargin < 3)
@@ -243,13 +244,14 @@ for run = 1:numruns
         
         % Compute inner products
         disp('Calc inner products'); pause(0.05); tic;
-        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache);
+        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache, ipaddrs);
         toc;
         
         % Calculate the SSDs to find best projection direction and
         % transformation params
         disp('Calc SSDs'); pause(0.05);tic;
-        [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
+        [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
+            ipaddrs,login,ppath,varmat,sleeptime,resfold,printout);
         toc;
         ssdtime = toc(ssdtime);
         ssdtimes(n) = ssdtime;

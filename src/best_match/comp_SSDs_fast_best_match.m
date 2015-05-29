@@ -3,7 +3,8 @@
 % and finds the best match for each image
 % The function is edited to be compatible with caching data structure
 
-function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem)
+function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
+    ipaddrs,login,ppath,varmat,sleeptime,resfold,printout)
 
 % Initializations
 projinds = -ones(numim,1);
@@ -31,6 +32,7 @@ for c = 1:numctf
     numstu = size(searchtransu,1);
    
     % For each set of translations
+    fprintf('\nNumber of set of translations: %i\n', numstu);
     for st = 1:numstu
         currtrans = searchtransu(st,:);
         sinds = find(ismember(searchtrans(cis,:),currtrans,'rows'));
@@ -45,6 +47,7 @@ for c = 1:numctf
         end
         batchsize = ceil(numsinds / numbatches);
         numbatches = ceil(numsinds / batchsize);
+        fprintf('\nNumber of images per batch to process: %i\n', numbatches);
         
         % For each batch of images
         for b = 1:numbatches
@@ -66,35 +69,57 @@ for c = 1:numctf
             currprojnorms = projnormsc(:,ones(numcurrim,1));
             ic = imcoeffs(curriminds,:)';
             
-            % For each rotation
-            for r = 1:numrot
-                % For each translation in the current search set
-                for t = 1:numst
-                    % Check if translation exists
-                    currt = currtrans(t);
-                    if currt < 1
-                        continue;
+            % if using distributor, break data
+            [ncluster ~] = find(ipaddrs==' ');
+            ncluster = size(ncluster,2)+1;
+            if ncluster == 1 % if distributor is not used
+                % For each rotation
+                for r = 1:numrot
+                    % For each translation in the current search set
+                    for t = 1:numst
+                        % Check if translation exists
+                        currt = currtrans(t);
+                        if currt < 1
+                            continue;
+                        end
+                        
+                        % Set up the current image norms
+                        currimnorms = imnorms(currt,curriminds);
+                        currimnorms = currimnorms(onesprojc,:);
+                        
+                        % First calculate the inner products between
+                        % projections and current images
+                        currips = currprojcoeffs*(ips.read_cached_array([0,0,r,currt])*ic);
+                        %currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
+                        
+                        %                   % Calculate scale and adjust
+                        s = currips ./ currprojnorms / 2;
+                        s(s < minscale) = minscale;
+                        s(s > maxscale) = maxscale;
+                        
+                        % Calculate the ssds between each projection and image
+                        ssds(:,:,r,t) = currimnorms + s.^2.*currprojnorms - s.*currips;
                     end
-                    
-                    % Set up the current image norms
-                    currimnorms = imnorms(currt,curriminds);
-                    currimnorms = currimnorms(onesprojc,:);
-                    
-                    % First calculate the inner products between
-                    % projections and current images
-                    currips = currprojcoeffs*(ips.read_cached_array([0,0,r,currt])*ic);
-                    %currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
-                    
-                    %                   % Calculate scale and adjust
-                    s = currips ./ currprojnorms / 2;
-                    s(s < minscale) = minscale;
-                    s(s > maxscale) = maxscale;
-                    
-                    % Calculate the ssds between each projection and image
-                    ssds(:,:,r,t) = currimnorms + s.^2.*currprojnorms - s.*currips;
                 end
+            else % if distributor is used
+                remmat = 'comp_SSDs_fast_best_match_wrapper';
+                bashscript = fullfile(pwd,'dhead.sh');
+                % split data
+                fprintf('\n\nCalculation using remotes \n');
+                numrot_ = ceil(numrot / ncluster);
+                numrot_l = numrot - numrot_*(ncluster-1); % size of last might be different
+                for i=1:ncluster
+                    if i~=ncluster
+                        
+                    else % the last cluster
+                    end
+                    save([varmat int2str(i) '.mat'], 'currtrans_', 'curriminds_', 'onesprojc_', 'currprojcoeffs_', 'ips_', 'ic_',...
+                        'currprojnorms_');
+                end
+                
             end
             
+                 
             % For each image in the batch
             pind = zeros(1,numcurrim);
             rind = zeros(1,numcurrim);

@@ -76,7 +76,7 @@ configfile = generate_config(pathout, imfile, eval(ctffile), str2num(substep), s
     str2num(rotend), str2num(transmax), str2num(transdelta), str2num(transwidth), str2num(alignims),...
     eval(ipaddrs), eval(login), ppath, eval(varmat), str2num(sleeptime), resfold, str2num(printout));
 
-best_match(pathout, configfile, str2num(caching), pathcache);
+best_match(pathout, configfile, str2num(caching), pathcache, eval(ipaddrs), eval(login), ppath, eval(varmat), str2num(sleeptime), resfold, str2num(printout));
 end
 
 function foldname = fixslash(foldname)
