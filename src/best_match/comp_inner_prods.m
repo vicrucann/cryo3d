@@ -45,7 +45,7 @@ else            % Rotations + translations
     else % in case if we use distributor
         numbatches = ncluster;
         k=2;
-        while (numbatches > ceil(neededmem / g.FreeMemory))
+        while (numbatches < ceil(neededmem / g.FreeMemory))
             numbatches = ncluster*k;
             k=k+1;
         end        
