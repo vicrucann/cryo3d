@@ -17,7 +17,7 @@ if (nargin < 3)
     caching = -1;
 end
 
-addpath(fullfile(cd, '../src/best_match'));
+addpath(fullfile(cd, '../src/recon'));
 addpath(fullfile(cd, '../src/mrc'));
 addpath(fullfile(cd, '../src/caching'));
 
