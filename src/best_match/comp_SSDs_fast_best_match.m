@@ -102,10 +102,9 @@ for c = 1:numctf
                     end
                 end
             else % if distributor is used
-                remmat = 'comp_SSDs_fast_best_match_wrapper';
-                bashscript = [fullfile(cd, '../src/rshell-mat/') 'dhead.sh'];
+                
                 % split and save data to files
-                fprintf('\n\nCalculation using remotes \n');
+                fprintf('\n\nCalculation using remotes: splitting data \n');
                 numrot_ = ceil(numrot / ncluster);
                 numrot_l = numrot - numrot_*(ncluster-1); % size of last might be different
                 for i=1:ncluster
@@ -125,18 +124,31 @@ for c = 1:numctf
                 end
                 clear ipsi mm;
                 % launch the bash scripts
-                pathsrc = fullfile(cd, '../src/rshell-mat/');
+                remmat = 'comp_SSDs_fast_best_match_wrapper';
+                currfold = pwd;
+                cd('../src/rshell-mat/');
+                distrfold = pwd;
+                distrfold = fixslash(distrfold);
+                cd(currfold);
+                cd('../src/best_match/');
+                srcfold = pwd;
+                srcfold = fixslash(srcfold);
+                cd(currfold);
+                bashscript = [distrfold 'dhead.sh'];
+                pathsrc = srcfold;
                 system(['chmod u+x ' bashscript]);
                 if printout
-                    cmdStr = [bashscript ' ' login ' ' ppath ' ' ipaddrs ' ' pathsrc ' ' remmat ' ' pathout ' ' varmat ' ' int2str(sleeptime) ' ' resfold];
+                    cmdStr = [bashscript ' ' login ' ' ppath ' ' ipaddrs ' ' pathsrc ' ' remmat ' ' pathout ' ' varmat ' '...
+                        distrfold ' ' int2str(sleeptime) ' ' resfold];
                 else
                     cmdStr = [bashscript ' ' login ' ' ppath ' ' ipaddrs ' '...
-                        pathsrc ' ' remmat ' ' pathout ' ' varmat ' ' int2str(sleeptime) ' ' resfold '>' remmat '.log 2>&1'];
+                        pathsrc ' ' remmat ' ' pathout ' ' varmat ' ' distrfold ' ' int2str(sleeptime) ' ' resfold '>' remmat '.log 2>&1'];
                 end
                 % perform the command
                 system(cmdStr);
                 
                 % merge the results (ssds = [ssdi1 ssdi2 ...])
+                fprintf('Merging the result data...');
                 for i=1:ncluster
                     load([resfold '/' 'result_' varmat int2str(i) '.mat']);
                     if i~=ncluster
@@ -145,6 +157,7 @@ for c = 1:numctf
                         ssds(:,:, (i-1)*numrot_ + 1 : numrot_l, :) = ssdi;
                     end
                 end
+                fprintf('done\n');
             end
                  
             % For each image in the batch
@@ -185,4 +198,17 @@ end
 
 scales(scales < minscale) = minscale;
 scales(scales > maxscale) = maxscale;
+end
+
+function foldname = fixslash(foldname)
+slash = foldname(end);
+if (~isequal(slash, '\') && ~isequal(slash, '/'))
+    archstr = computer('arch');
+    if (isequal(archstr(1:3), 'win')) % Windows
+        foldname = [foldname '\'];
+    else % Linux
+        foldname = [foldname '/'];
+    end
+end
+end
 

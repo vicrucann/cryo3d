@@ -8,6 +8,7 @@ load(fname);
 
 ssdi = inf(numprojc, numcurrim, r_end - r_begin, numst,'single');
 
+fprintf('The calculation loop for r in range [%i %i] and t in range [%i %i]\n', r_begin, r_end, 1, numst);
 for r = r_begin:r_end
     for t = 1:numst
         % Check if translation exists
@@ -32,6 +33,7 @@ for r = r_begin:r_end
         ssdi(:, :, r - r_begin + 1, t) = currimnorms + s.^2.*currprojnorms - s.*currips;
     end
 end
-save(resfname, 'ssdi');
-
+fprintf('loop terminated\n');
+save(resfname, 'ssdi', '-v7.3');
+fprintf('output variable saved\n');
 end
