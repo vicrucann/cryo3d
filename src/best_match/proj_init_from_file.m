@@ -1,5 +1,5 @@
 % Function to create new projection initialization file from results of a
-% previous fast em-algorithm run
+% previous subspaceEM/bestmatch run
 % Usage:   
 %           proj_init_from_file(structurefile,initfile,writefile)
 % Inputs:

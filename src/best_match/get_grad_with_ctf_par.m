@@ -1,3 +1,9 @@
+% Function to be used in conjugate gradient reconstruction
+
+% Original code by Hemant Tagare
+% Modified for parallel processing by Nicha C. Dvornek, 04/2014
+
+
 function g=get_grad_with_ctf_par(x,mask_r,proj,data_axes,l_norm,l_smooth,ctfs)
 
 n_proj=size(proj,3);

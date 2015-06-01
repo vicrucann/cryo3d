@@ -1,6 +1,9 @@
-% Function to be used in EM code
+% Function to be used in subspaceEM/bestmatch code
 % Computes inner products between image basis and rotated/translated projection basis
 
+% Created by Nicha C. Dvornek, 08/2013
+
+% Last modified by Victoria Rudakova, 05/2015
 % Function edited to save the ips variable to cache files - in order to
 % avoid "out of memory" error when dealing with large dimensions
 % ips_cache output variable contains the list of cache files

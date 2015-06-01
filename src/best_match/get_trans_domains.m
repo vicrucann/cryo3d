@@ -1,6 +1,9 @@
 % Function to determine the current best translation and to update
 % translation search indices
 
+% Created by Nicha C. Dvornek, 02/2014
+
+
 function searchtrans = get_trans_domains(iminds,transinds,lpcs_vals,trans,transwidth,transdelta,numim)
 
 if transwidth == 0

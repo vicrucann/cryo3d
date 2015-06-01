@@ -14,6 +14,9 @@ function [x_r, dx, iter] =reconstruct_by_cg_w_ctf_par(proj,data_axes,ctfs,mask,l
 %   This function needs CG_UTIL environmental variable to be set
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Original code by Hemant Tagare
+% Modified by Nicha C. Dvornek, 11/2013 for parallel processing
+
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % Set the utilities directory
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

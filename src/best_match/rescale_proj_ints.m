@@ -1,14 +1,12 @@
 % Rescale projections to 0 mean 1 std and then scale to image range
 
+% Created by Nicha C. Dvornek, 03/2014
+% Last modified 03/2015
+
 function proj_struct = rescale_proj_ints(proj_struct,noisyims)
 
 prcmin = 3;
 prcmax = 97;
-
-% for j = 1:size(proj_struct,3)
-%     temp = proj_struct(:,:,j);
-%     proj_struct(:,:,j) = (temp - mean(temp(:))) ./ std(temp(:));
-% end
 
 proj_struct = (proj_struct - mean(proj_struct(:))) ./ std(proj_struct(:));
 

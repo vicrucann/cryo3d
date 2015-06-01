@@ -1,6 +1,9 @@
-% Function to be used in EM code
+% Function to be used in subspaceEM/bestmatch code
 % Updates projection templates from weighted averages of rotated/translated
 % noisy images using latent probabilities
+
+% Created by Nicha C. Dvornek 05/2014
+
 
 function proj_est = update_templates2(noisyims_g,iminds,projinds,rotinds,transinds,lprs_vals,rots,trans,numpixsqrt,numim,numproj)
 

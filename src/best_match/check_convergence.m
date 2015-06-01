@@ -1,3 +1,7 @@
+% Function to be used in subspaceEM/bestmatch code
+
+% Created by Nicha C. Dvornek, 08/2013
+
 function [done,err,pind] = check_convergence(proj_last,proj_est,convtol,numproj)
 
 done = 1;

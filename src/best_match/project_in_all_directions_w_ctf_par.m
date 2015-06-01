@@ -17,6 +17,7 @@ function [proj, data_axes] = project_in_all_directions_w_ctf_par(x,mask,coord_ax
 %   Code history:
 %       Written by H. Tagare  30/06/10.
 %       Modified by H. Tagare 9/14/10 to include normal and ctf arrays
+%       Modified by Nicha C. Dvornek 04/2014 to for parallel processing
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
