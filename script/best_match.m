@@ -37,7 +37,7 @@ totaltime = tic;
 [imfile,imreconfile,ctffile,maxmem,numthreads,...
     dispflag,substep,reconhalf,reconstartind,normprojint,numruns,...
     maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,...
-    convtol,f,alignims] = read_config_file(configfile);
+    convtol,t,alignims] = read_config_file(configfile);
 
 % Reconstruction parameters
 l_norm = 0.1;
@@ -83,7 +83,7 @@ for run = 1:numruns
         latent_der = latentim(2:end) - latentim(1:end-1);
         latent_der2 = latent_der(2:end) - latent_der(1:end-1);
         latent_der2_avg = conv([1 1 1 ]./3,abs(latent_der2));
-        numimcoeffs = find(abs(latent_der2_avg) < f,1) + 3;
+        numimcoeffs = find(abs(latent_der2_avg) < t,1) + 3;
         if isempty(numimcoeffs)
             disp('Warning: threshold too low - using full PCA basis');
             numimcoeffs = length(latentim);
@@ -162,7 +162,7 @@ for run = 1:numruns
     latent_der = latentproj(2:end) - latentproj(1:end-1);
     latent_der2 = latent_der(2:end) - latent_der(1:end-1);
     latent_der2_avg = conv([1 1 1 ]./3,abs(latent_der2));
-    numprojcoeffs = find(abs(latent_der2_avg) < f,1) + 3;
+    numprojcoeffs = find(abs(latent_der2_avg) < t,1) + 3;
     if (latentproj(numprojcoeffs-2) == 0)
         numprojcoeffs = find(latentproj == 0,1);
     end
@@ -446,7 +446,7 @@ for run = 1:numruns
     if reconhalf
         savename = [savename '_h' num2str(reconstartind)];
     end
-    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','f','imfile','initprojfile','imreconfile','convtol','coord_axes','structmask');
+    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','t','imfile','initprojfile','imreconfile','convtol','coord_axes','structmask');
     
     % Some clean up
     clear structure_final structure proj_est proj_last
