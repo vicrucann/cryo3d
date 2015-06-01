@@ -114,7 +114,7 @@ for c = 1:numctf
                         r_end = numrot_ * i;
                         dims(ips.broken)=numrot_;
                     else % the last cluster
-                        r_end = numrot_l;
+                        r_end = numrot;
                         dims(ips.broken)=numrot_l;
                     end
                     mm = memmapfile([ips.path ips.vname '_' num2str(i) '.dat'], 'Format', ips.type);
@@ -154,7 +154,7 @@ for c = 1:numctf
                     if i~=ncluster
                         ssds(:,:, (i-1)*numrot_+1 : numrot_ * i, :) = ssdi;
                     else
-                        ssds(:,:, (i-1)*numrot_ + 1 : numrot_l, :) = ssdi;
+                        ssds(:,:, (i-1)*numrot_ + 1 : numrot, :) = ssdi;
                     end
                 end
                 fprintf('done\n');
