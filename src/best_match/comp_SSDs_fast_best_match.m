@@ -110,14 +110,17 @@ for c = 1:numctf
                 numrot_l = numrot - numrot_*(ncluster-1); % size of last might be different
                 for i=1:ncluster
                     r_begin = (i-1)*numrot_ + 1;
+                    dims = ips.dimension;
                     if i~=ncluster
                         r_end = numrot_ * i;
+                        dims(ips.broken)=numrot_;
                     else % the last cluster
                         r_end = numrot_l;
+                        dims(ips.broken)=numrot_l;
                     end
                     mm = memmapfile([ips.path ips.vname '_' num2str(i) '.dat'], 'Format', ips.type);
-                    ipsi = reshape(mm.Data, ips.dimension);
-                    save([varmat int2str(i) '.mat'], 'r_begin', 'r_end', 'numst', 'currtrans', 'curriminds', 'onesprojc', 'currprojcoeffs', 'ips_', 'ic',...
+                    ipsi = reshape(mm.Data, dims);
+                    save([pathout varmat int2str(i) '.mat'], 'r_begin', 'r_end', 'numst', 'currtrans', 'curriminds', 'onesprojc', 'currprojcoeffs', 'ic',...
                         'currprojnorms', 'minscale', 'maxscale', 'imnorms', 'numprojc', 'numcurrim', 'numrot', 'ipsi');
                 end
                 clear ipsi mm;
