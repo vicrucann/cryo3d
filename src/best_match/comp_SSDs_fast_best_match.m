@@ -103,7 +103,7 @@ for c = 1:numctf
                 end
             else % if distributor is used
                 remmat = 'comp_SSDs_fast_best_match_wrapper';
-                bashscript = fullfile(pwd,'dhead.sh');
+                bashscript = [fullfile(cd, '../src/rshell-mat/') 'dhead.sh'];
                 % split and save data to files
                 fprintf('\n\nCalculation using remotes \n');
                 numrot_ = ceil(numrot / ncluster);
