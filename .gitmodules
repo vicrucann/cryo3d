@@ -1,0 +1,3 @@
+[submodule "src/rshell-mat"]
+	path = src/rshell-mat
+	url = https://github.com/vicrucann/rshell-mat

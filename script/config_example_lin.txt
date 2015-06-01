@@ -1,7 +1,7 @@
 %% Most frequntly edited parameters:
 
 pathout = '/home/vicru/temp/1/';
-pathdata = '/home/tagarelab-data/20150205_sdp/';
+pathdata = '/home/vicru/data/';
 caching = 0; % 1 for caching on, 0 caching off, -1 automatic caching
 pathcache = '/home/vicru/temp/1/cache/';
 dtheta = 12;
@@ -56,23 +56,23 @@ alignims = 1; % 0 or 1, save aligned images or not
 %% Bash distributer parameters
 
 % list of IP addresses
-ipaddrs = ['130.132.104.236' ' ' '172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.77'];
+ipaddrs = ['172.21.9.92' ' ' '172.23.2.105'];
 
 % login id which will be used to access the remotes (same for all remotes)
 login = 'cryo';
 
 % workplace directory on remotes (same for all remotes)
-ppath = '/home/cryo/dop';
+ppath = '/home/cryo/test_cryo3d';
 
 % function matlab name that will be launched on remotes
-remmat = 'mandelbrot';
+remmat = 'comp_SSDs_fast_best_match_wrapper';
 
 % variable name where all the data will be saved to
-varmat = 'mnd';
+varmat = 'ssd_fbm';
 
 % pause interval (will be run 50 times)
-sleeptime = 5;
+sleeptime = 45;
 
 % folder name where results will be copied to
-resfold = [pathout 'dres'];
-printout = 0;
+resfold = [pathout 'result_distr'];
+printout = 1;

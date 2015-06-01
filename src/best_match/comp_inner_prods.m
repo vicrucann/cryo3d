@@ -9,13 +9,13 @@
 % ips_cache output variable contains the list of cache files
 % by default the files are saved in the current directory in 'cache\' folder
 
-function ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache)
+function ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache, ipaddrs)
 %function ips_cache = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching)
 
 projbasis3d_g = gpuArray(single(reshape(projbasis,[numpixsqrt, numpixsqrt, numprojcoeffs])));
 imbasis_g = gpuArray(imbasis)';
 
-if nargin == 8  % Only rotations
+if nargin == 8  % Only rotations ! the parameter number had changed, this block is obsolete
     
     ips_g = gpuArray.zeros(numimcoeffs,numprojcoeffs,numrot);
     for r = 1:numrot
@@ -33,10 +33,26 @@ else            % Rotations + translations
         
     validtrans = unique(searchtrans(searchtrans > 0))';
     g = gpuDevice;
+    
+    % if the distributer will be used, numbatches = c*numservers; 
+    % where c is a coeff [1..], normally would be 1 and more for more
+    % requiring data sizes
+    [ncluster ~] = find(ipaddrs==' ');
+    ncluster = size(ncluster,2)+1;
     neededmem = numimcoeffs*numprojcoeffs*numrot*numtrans*8 + numpix*numprojcoeffs*8;
-    numbatches = ceil(neededmem / g.FreeMemory);
-    if numbatches > 1
-        numbatches = numbatches + 1;
+    if ncluster == 1    % no distributer used, just a local machine
+        numbatches = ceil(neededmem / g.FreeMemory);
+        if numbatches > 1
+            numbatches = numbatches + 1;
+        end
+    else % in case if we use distributor
+        numbatches = ncluster;
+        caching=1;
+        k=2;
+        while (numbatches < ceil(neededmem / g.FreeMemory))
+            numbatches = ncluster*k;
+            k=k+1;
+        end        
     end
     batchsize = ceil(numrot / numbatches);
     
