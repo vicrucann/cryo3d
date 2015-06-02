@@ -34,6 +34,10 @@ for r = r_begin:r_end
     end
 end
 fprintf('loop terminated\n');
-save(resfname, 'ssdi', '-v7.3');
+wh = whos('ssdi');
+fid = fopen(resfname,'Wb');
+fwrite(fid, ssdi, wh.class);
+fclose(fid);
+%save(resfname, 'ssdi', '-v7.3'); % fwrite is faster?
 fprintf('output variable saved\n');
 end

@@ -150,13 +150,20 @@ for c = 1:numctf
                 % merge the results (ssds = [ssdi1 ssdi2 ...])
                 fprintf('Merging the result data...');
                 for i=1:ncluster
-                    load([resfold '/' 'result_' varmat int2str(i) '.mat']);
+                    %load([resfold '/' 'result_' varmat int2str(i) '.mat']);
+                    mm = memmapfile([resfold '/' 'result_' varmat int2str(i) '.mat'], 'Format', ips.type);
+                    dims = [numprojc,numcurrim,numrot,numst];
                     if i~=ncluster
+                        dims(ips.broken)=numrot_;
+                        ssdi = reshape(mm.Data, dims);
                         ssds(:,:, (i-1)*numrot_+1 : numrot_ * i, :) = ssdi;
                     else
+                        dims(ips.broken)=numrot_l;
+                        ssdi = reshape(mm.Data, dims);
                         ssds(:,:, (i-1)*numrot_ + 1 : numrot, :) = ssdi;
                     end
                 end
+                clear ssdi mm;
                 fprintf('done\n');
             end
                  
