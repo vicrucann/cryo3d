@@ -2,15 +2,15 @@
 
 pathout = '/home/vicru/temp/1/';
 pathdata = '/home/vicru/data/';
-caching = 0; % 1 for caching on, 0 caching off, -1 automatic caching
+caching = -1; % 1 for caching on, 0 caching off, -1 automatic caching
 pathcache = '/home/vicru/temp/1/cache/';
-dtheta = 12;
+dtheta = 6;
 
 maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
 maxmem = 50624;
 
 numthreads = 18;
-rotstep = 6;
+rotstep = 3;
 transmax = 4;
 
 %% Preprocessing
@@ -56,7 +56,8 @@ alignims = 1; % 0 or 1, save aligned images or not
 %% Bash distributer parameters
 
 % list of IP addresses
-ipaddrs = ['172.21.9.92' ' ' '172.23.2.105'];
+ipaddrs = ['172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.77'];
+%ipaddrs = [];
 
 % login id which will be used to access the remotes (same for all remotes)
 login = 'cryo';
@@ -71,8 +72,8 @@ remmat = 'comp_SSDs_fast_best_match_wrapper';
 varmat = 'ssd_fbm';
 
 % pause interval (will be run 50 times)
-sleeptime = 45;
+sleeptime = 30;
 
 % folder name where results will be copied to
 resfold = [pathout 'result_distr'];
-printout = 1;
+printout = 0;
