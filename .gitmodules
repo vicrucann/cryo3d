@@ -1,3 +1,6 @@
 [submodule "src/rshell-mat"]
 	path = src/rshell-mat
 	url = https://github.com/vicrucann/rshell-mat
+[submodule "src/cacharr"]
+	path = src/cacharr
+	url = https://github.com/vicrucann/cacharr
