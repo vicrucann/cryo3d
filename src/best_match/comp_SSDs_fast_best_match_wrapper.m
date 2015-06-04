@@ -33,11 +33,19 @@ for r = r_begin:r_end
         ssdi(:, :, r - r_begin + 1, t) = currimnorms + s.^2.*currprojnorms - s.*currips;
     end
 end
-fprintf('loop terminated\n');
-wh = whos('ssdi');
-fid = fopen(resfname,'Wb');
-fwrite(fid, ssdi, wh.class);
-fclose(fid);
+fprintf('loop-1 terminated\n');
+minidc = zeros(1,numcurrim);
+minval = zeros(1,numcurrim);
+for i = 1:numcurrim
+    currssdi = squeeze(ssdi(:,i,:,:));
+    [minval(i), minidc(i)] = min(currssdi(:));
+end
+fprintf('loop-2 terminated\n');
+%wh = whos('ssdi');
+%fid = fopen(resfname,'Wb');
+%fwrite(fid, ssdi, wh.class);
+%fclose(fid);
 %save(resfname, 'ssdi', '-v7.3'); % fwrite is faster?
+save(resfname, 'minval', 'minidc');
 fprintf('output variable saved\n');
 end

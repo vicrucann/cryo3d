@@ -101,10 +101,30 @@ for c = 1:numctf
                         ssds(:,:,r,t) = currimnorms + s.^2.*currprojnorms - s.*currips;
                     end
                 end
+                
+                % For each image in the batch
+                pind = zeros(1,numcurrim);
+                rind = zeros(1,numcurrim);
+                tind = zeros(1,numcurrim);
+                for i = 1:numcurrim
+                    % Find the min ssd and get the indices of the parameters of
+                    % the best batch
+                    currssds = squeeze(ssds(:,i,:,:));
+                    [SSDs(curriminds(i)),minind] = min(currssds(:));
+                    [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
+                    projinds(curriminds(i)) = inds(pind(i));
+                    rotinds(curriminds(i)) = rind(i);
+                    transinds(curriminds(i)) = currtrans(tind(i));
+                    
+                    % Calculate scale that gave the min ssd
+                    %scales(curriminds(i)) = currprojcoeffs(pind(i),:)*ips(:,:,rind(i),currtrans(tind(i)))*...
+                    %    imcoeffs(curriminds(i),:)' / projnormsc(pind(i)) / 2;
+                end
+                
             else % if distributor is used
                 
                 % split and save data to files
-                fprintf('\n\nCalculation using remotes: splitting data \n');
+                fprintf('\n\nCalculation using remotes: splitting data...');
                 numrot_ = ceil(numrot / ncluster);
                 numrot_l = numrot - numrot_*(ncluster-1); % size of last might be different
                 for i=1:ncluster
@@ -123,16 +143,13 @@ for c = 1:numctf
                         'currprojnorms', 'minscale', 'maxscale', 'imnorms', 'numprojc', 'numcurrim', 'numrot', 'ipsi');
                 end
                 clear ipsi mm;
+                fprintf('done\n');
                 % launch the bash scripts
                 remmat = 'comp_SSDs_fast_best_match_wrapper';
-                currfold = pwd;
-                cd('../src/rshell-mat/');
-                distrfold = pwd;
-                distrfold = fixslash(distrfold);
-                cd(currfold);
-                cd('../src/best_match/');
-                srcfold = pwd;
-                srcfold = fixslash(srcfold);
+                currfold = pwd; cd('../src/rshell-mat/');
+                distrfold = pwd; distrfold = fixslash(distrfold);
+                cd(currfold); cd('../src/best_match/');
+                srcfold = pwd; srcfold = fixslash(srcfold);
                 cd(currfold);
                 bashscript = [distrfold 'dhead.sh'];
                 pathsrc = srcfold;
@@ -147,44 +164,69 @@ for c = 1:numctf
                 % perform the command
                 system(cmdStr);
                 
-                % merge the results (ssds = [ssdi1 ssdi2 ...])
+                % merge the results 
+                % the return results are the result of operation "min(currssds(:));"
+                % that is, [min_val min_idx] for the current cluster
+                % our task is to unite the data by picking the minimum of
+                % each cluster and perform assignment of
+                % [SSDs(curriminds(i)),minind] variables
                 fprintf('Merging the result data...');
+%                 for i=1:ncluster
+%                     %load([resfold '/' 'result_' varmat int2str(i) '.mat']);
+%                     mm = memmapfile([resfold '/' 'result_' varmat int2str(i) '.mat'], 'Format', ips.type);
+%                     dims = [numprojc,numcurrim,numrot,numst];
+%                     if i~=ncluster
+%                         dims(ips.broken)=numrot_;
+%                         ssdi = reshape(mm.Data, dims);
+%                         ssds(:,:, (i-1)*numrot_+1 : numrot_ * i, :) = ssdi;
+%                     else
+%                         dims(ips.broken)=numrot_l;
+%                         ssdi = reshape(mm.Data, dims);
+%                         ssds(:,:, (i-1)*numrot_ + 1 : numrot, :) = ssdi;
+%                     end
+%                 end
+%                 clear ssdi mm;
+                minindices = zeros(ncluster,numcurrim);
+                minvalues = zeros(ncluster,numcurrim);
                 for i=1:ncluster
-                    %load([resfold '/' 'result_' varmat int2str(i) '.mat']);
-                    mm = memmapfile([resfold '/' 'result_' varmat int2str(i) '.mat'], 'Format', ips.type);
-                    dims = [numprojc,numcurrim,numrot,numst];
-                    if i~=ncluster
-                        dims(ips.broken)=numrot_;
-                        ssdi = reshape(mm.Data, dims);
-                        ssds(:,:, (i-1)*numrot_+1 : numrot_ * i, :) = ssdi;
-                    else
-                        dims(ips.broken)=numrot_l;
-                        ssdi = reshape(mm.Data, dims);
-                        ssds(:,:, (i-1)*numrot_ + 1 : numrot, :) = ssdi;
-                    end
+                    load([resfold '/' 'result_' varmat int2str(i) '.mat']);
+                    minindices(i,:) = minidc;
+                    minvalues(i,:) = minval;
                 end
-                clear ssdi mm;
+                
+                % For each image in the batch
+                pind = zeros(1,numcurrim);
+                rind = zeros(1,numcurrim);
+                tind = zeros(1,numcurrim);
+                for i = 1:numcurrim
+                    [val ind] = min(minvalues(:,i));
+                    [SSDs(curriminds(i)),minind] = [val minindices(ind,i)];
+                    [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
+                    projinds(curriminds(i)) = inds(pind(i));
+                    rotinds(curriminds(i)) = rind(i);
+                    transinds(curriminds(i)) = currtrans(tind(i));
+                end
                 fprintf('done\n');
             end
                  
-            % For each image in the batch
-            pind = zeros(1,numcurrim);
-            rind = zeros(1,numcurrim);
-            tind = zeros(1,numcurrim);
-            for i = 1:numcurrim
-                % Find the min ssd and get the indices of the parameters of
-                % the best batch
-                currssds = squeeze(ssds(:,i,:,:));
-                [SSDs(curriminds(i)),minind] = min(currssds(:));
-                [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
-                projinds(curriminds(i)) = inds(pind(i));
-                rotinds(curriminds(i)) = rind(i);
-                transinds(curriminds(i)) = currtrans(tind(i));
-                
-                % Calculate scale that gave the min ssd
-                %scales(curriminds(i)) = currprojcoeffs(pind(i),:)*ips(:,:,rind(i),currtrans(tind(i)))*...
-                %    imcoeffs(curriminds(i),:)' / projnormsc(pind(i)) / 2;
-            end
+%             % For each image in the batch
+%             pind = zeros(1,numcurrim);
+%             rind = zeros(1,numcurrim);
+%             tind = zeros(1,numcurrim);
+%             for i = 1:numcurrim
+%                 % Find the min ssd and get the indices of the parameters of
+%                 % the best batch
+%                 currssds = squeeze(ssds(:,i,:,:));
+%                 [SSDs(curriminds(i)),minind] = min(currssds(:));
+%                 [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
+%                 projinds(curriminds(i)) = inds(pind(i));
+%                 rotinds(curriminds(i)) = rind(i);
+%                 transinds(curriminds(i)) = currtrans(tind(i));
+%                 
+%                 % Calculate scale that gave the min ssd
+%                 %scales(curriminds(i)) = currprojcoeffs(pind(i),:)*ips(:,:,rind(i),currtrans(tind(i)))*...
+%                 %    imcoeffs(curriminds(i),:)' / projnormsc(pind(i)) / 2;
+%             end
             
             % to calculate scales, need to sort by rind so that to have sequensial access to ips
             [s_rind, i_rind] = sort(rind);
