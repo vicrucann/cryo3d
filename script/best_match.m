@@ -19,7 +19,8 @@ end
 
 addpath(fullfile(cd, '../src/best_match'));
 addpath(fullfile(cd, '../src/mrc'));
-addpath(fullfile(cd, '../src/caching'));
+%addpath(fullfile(cd, '../src/caching'));
+addpath(fullfile(cd, '../src/cacharr'));
 
 if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
     delete(gcp('nocreate'));
