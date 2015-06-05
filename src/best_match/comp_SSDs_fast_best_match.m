@@ -47,7 +47,7 @@ for c = 1:numctf
         end
         batchsize = ceil(numsinds / numbatches);
         numbatches = ceil(numsinds / batchsize);
-        fprintf('\nNumber of images per batch to process: %i\n', numbatches);
+        %fprintf('\nNumber of images per batch to process: %i\n', numbatches);
         
         % For each batch of images
         for b = 1:numbatches
