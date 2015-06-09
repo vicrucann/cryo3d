@@ -18,4 +18,4 @@
 	4. (...)    		->	coordinate_axes.m       -> coord-ax.mat
 
 ### Author information
-All of function for fast best match method were written by Nicha Dvornek. The improvements like main framework, distributor package, caching class and few others were written by Victoria Rudakova. For inquires and more information: vicrucann(at)gmail(dot)com. 
+All of function for fast best match method were written by Nicha Dvornek. The improvements like main framework, distributor package, caching class and few others were written by Victoria Rudakova. For inquires on additional packages: vicrucann(at)gmail(dot)com. 
