@@ -26,13 +26,15 @@ for i = 1:length(labels)
     tf = strcmp(labels{i},all_labels);
     inds = find(tf == 1);
     if isempty(inds)
-        disp('Error: Label name does not exist in .star file');
+        disp(['Error: Label name ' labels{i} ' does not exist in .star file']);
         return;
     elseif length(inds) > 1
         disp('Warning: Label name occurs multiple times in .star file. Using first occurance');
     end
     cols(i) = inds(1);
 end
+[cols_sort,sort_inds] = sort(cols);
+
 
 % Check if can open file
 fid = fopen(starfile);
@@ -58,14 +60,20 @@ frewind(fid);
 fmt = [];
 ind = 0;
 for i = 1:length(labels)
-    fmt = [fmt repmat('%*s ',[1,cols(i)-ind-1]) datatypes{cols(i)}];
-    ind = cols(i);
+    fmt = [fmt repmat('%*s ',[1,cols_sort(i)-ind-1]) datatypes{cols_sort(i)}];
+    ind = cols_sort(i);
 end
 fmt = [fmt '%*[^\n]'];
 if numrows > 0
-    data = textscan(fid,fmt,numrows,'HeaderLines',numhlines);
+    tempdata = textscan(fid,fmt,numrows,'HeaderLines',numhlines);
 else
-    data = textscan(fid,fmt,'HeaderLines',numhlines);
+    tempdata = textscan(fid,fmt,'HeaderLines',numhlines);
+end
+
+% Rearrange data columns to correspond to original label order
+data = cell(size(tempdata));
+for i = 1:length(labels)
+    data{sort_inds(i)} = tempdata{i};
 end
 
 fclose(fid);
