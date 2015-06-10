@@ -464,7 +464,7 @@ save([pathout '/' savename '.mat'],'-append','recon');
 writeMRC(recon,h.pixA,[pathout '/' 'fbm_recon.mrc'])
 
 if ~isequal(structmask,ones(size(structmask)))
-    writeMRC(recon.*structmask,h.pixA,[pathout 'fbm_recon_masked.mrc']);
+    writeMRC(recon.*structmask,h.pixA,[pathout '/' 'fbm_recon_masked.mrc']);
 end
 
 % Align images and save
