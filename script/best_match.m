@@ -21,15 +21,6 @@ addpath(fullfile(cd, '../src/recon'));
 addpath(fullfile(cd, '../src/mrc'));
 addpath(fullfile(cd, '../src/caching'));
 
-if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
-    delete(gcp('nocreate'));
-end
-
-parpool;
-
-%% testing on my machine
-% matlabpool
-
 % Stuff for timing
 totaltime = tic;
 
@@ -45,6 +36,11 @@ l_smooth = -10;
 iter_lim = 10;
 stop_lim = 0.03;
 
+% Start pool
+if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
+    delete(gcp('nocreate'));
+end
+parpool(numthreads);
 
 %% Fast best match outer loop
 for run = 1:numruns
@@ -153,9 +149,6 @@ for run = 1:numruns
         pcatic = tic; [coeffproj, scoreproj, latentproj] = princomp(data); toc(pcatic);
         clear data;
     end
-%    if (~exist('structmask','var'))
-%        structmask = ones(size(structure));
-%    end
     
     % Set up projection subspace and coeffs
     disp('Setting up initial projection subspace');
@@ -203,14 +196,6 @@ for run = 1:numruns
     onesproj = ones(numproj,1,'int8');
     proj_est = reshape(projbasis*projcoeffs'.*maskimcol(:,onesproj),[numpixsqrt,numpixsqrt,numproj]);
     projbasis = projbasis .* maskimcol(:,onesprojcoeff);
-    
-    % Start pool
-    %if numthreads > 0 % matlab2013
-    %   if matlabpool('size') > 0
-    %        matlabpool close;
-    %    end
-    %    matlabpool('local',numthreads);
-    %end
     
     % Set up initial search domains for translations
     disp('Set up translation search domains'); transtime = tic;
@@ -432,6 +417,9 @@ for run = 1:numruns
     if isempty(s)
         s = strfind(imfile,'/');
     end
+    if isempty(s)
+        s = 0;
+    end
     if strcmp(imfile(end-3:end),'.mat') || strcmp(imfile(end-3:end),'.mrc')
         savename = imfile(s(end)+1:end-4);
     elseif strcmp(imfile(end-4:end),'.mrcs')
@@ -457,7 +445,6 @@ end
 disp('Reconstruct one more time with largest mask possible');
 mask = get_mask_struct_ncd([numpixsqrt numpixsqrt numpixsqrt],1); % reconstruct with largest mask possible
 recon = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds),ctfs(:,:,mod(keepinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
-% matlabpool close
 delete(gcp('nocreate'));
 save([pathout '/' savename '.mat'],'-append','recon');
 [~,h] = ReadMRC(imreconfile,1,-1);
