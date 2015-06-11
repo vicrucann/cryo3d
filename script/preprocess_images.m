@@ -10,22 +10,26 @@
 % 2. stackfile - *.mrc file, stackfile = 'G:\db-frank\stack_ds4.mrc';
 % 3. ctffile = *.mat file with clustering info, ctffile = 'G:\db-frank\stack_ds4_5ctfs.mat';
 % 4. downsample = factor by which to downsample images, downsample = 2;
-% 5. pfflag = flag (0/1) to phase flip the images, pfflag = 1;
-% 6. pwflag = flag (0/1) to prewhiten images (input 7 and 8 required if pwflag = 1), pwflag = 1;
-% 7. npsfile = normally NPS.txt file, npsfile = 'G:\db-frank\NPS.txt';
-% 8. Apix - pixel size of micrograph for NPS data in Angstroms, Apix = 1.045;
+% 5. normflag = flag (0/1) to normalize image intensities to have 0 mean, 1 std dev, normflag = 1;
+% 6. pfflag = flag (0/1) to phase flip the images, pfflag = 1;
+% 7. pwflag = flag (0/1) to prewhiten images (input 7 and 8 required if pwflag = 1), pwflag = 1;
+% 8. npsfile = normally NPS.txt file, npsfile = 'G:\db-frank\NPS.txt';
+% 9. Apix - pixel size of micrograph for NPS data in Angstroms, Apix = 1.045;
 
-function outfile = preprocess_images(pathout, stackfile, ctffile, downsample, pfflag, pwflag, npsfile, Apix)
+function outfile = preprocess_images(pathout, stackfile, ctffile, downsample, normflag, pfflag, pwflag, npsfile, Apix)
 
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
 % Data and Params
-if (nargin < 6)
+if (nargin < 7)
     pwflag = 0; % Flag for whether or not to prewhiten the images
 end
-if (nargin < 5)
+if (nargin < 6)
     pfflag = 0; % Flag for whether or not to phase flip the images
+end
+if (nargin < 5)
+    normflag = 1; % Flag for whether to normalize image intensities
 end
 if (nargin < 4)
     downsample = 1; % Factor by which to downsample
@@ -142,13 +146,19 @@ for i = 1:K
     end
     
     % Rearrange montage image back into stack and normalize intensities
-    fprintf('  Normalize image intensities...\n');
+    if normflag
+        fprintf('  Normalize image intensities...\n');
+    end
     tempset = zeros(imgSx,imgSx,numinset,'single');
     idx = 1;
     for j = 1 : imgSx : size(singleMontage,1)
         for k = 1 : imgSx : size(singleMontage,1)
             temp = singleMontage(j:j+(imgSx-1),k:k+(imgSx-1));
-            tempset(:,:,idx) = (temp - mean(temp(:))) ./ std(temp(:));
+            if normflag
+                tempset(:,:,idx) = (temp - mean(temp(:))) ./ std(temp(:));
+            else
+                tempset(:,:,idx) = temp;
+            end
             idx = idx + 1;
         end
     end
@@ -167,6 +177,9 @@ f_path = strfind(stackfile, '\');
 if (isempty(f_path))
     f_path = strfind(stackfile, '/');
 end
+if isempty(f_path)
+    f_path = 0;
+end
 savefile = stackfile(max(f_path)+1:f_type-1); %stackfile(1:f-1);
 if downsample > 1
     savefile = [savefile '_ds' num2str(downsample)];
@@ -177,6 +190,9 @@ end
 if pwflag
     savefile = [savefile '_pw'];
 end
-savefile = [savefile '_norm.mrcs'];
+if normflag
+    savefile = [savefile '_norm'];
+end
+savefile = [savefile '.mrcs'];
 writeMRC(noisyims,Apixstack,[pathout savefile]);
 outfile = [pathout savefile];
