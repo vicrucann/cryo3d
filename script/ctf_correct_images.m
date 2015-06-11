@@ -1,41 +1,44 @@
 % Script to ctf correct an image stack
 
 % Code originally from Fred Sigworth
-% Modified by Nicha C. Dvornek, 02/2015
+% Modified by Nicha C. Dvornek, 06/2015
 
 % Parameter inputs, example:
 %stackfile = 'C:\Users\Nicha\Documents\Data\Frank_Data\Rotated70swithEFGparticle.mrcs';
 %paramfile = 'C:\Users\Nicha\Documents\Data\Frank_Data\Rotated70swithEFGparticle.star';
+%B = 30; B-factor in units of A^2
+%maxnim = 2000; (Optional) Number of images to read in for noise/signal spectra estimation. If stack is large, spectra estimation is slow. Default maxnim = half the stack size
 
-function passed = ctf_correct_images(stackfile, paramfile)
+function passed = ctf_correct_images(stackfile, paramfile, B, maxnim)
+
 passed = 0;
-% WOULD BE NICE IF WE COULD READ THIS IN FROM THE .STAR FILE
-pixA=6.35/60765.550200*10000;  % pixel size in angstroms: rlnDetectorPixelSize / _rlnMagnification * 10000
-volt = 300; % _rlnVoltage
-ampContrast=.1628;  % _rlnAmplitudeContrast
-
-B=30;  % not sure what to use for B-factor, maybe 30 in units of A^2
 
 %% Read in parameters
+data = read_star_data_for_labels(paramfile,{'_rlnDetectorPixelSize','_rlnMagnification','_rlnVoltage','_rlnAmplitudeContrast'},1);
+pixA = data{1} / data{2} * 10000; % pixel size in angstroms: rlnDetectorPixelSize / _rlnMagnification * 10000
+volt = data{3}; % _rlnVoltage
+ampContrast = data{4}; % _rlnAmplitudeContrast
+
 % Get defocus values
-fid = fopen(paramfile);
-% THIS ONLY WORKS FOR THE GIVEN .STAR FILE
-params = textscan(fid,'%f %f %f %f %f %f %f %f %f %s %f %f %f %f %s %s %f %f %f %f %f %f %f %f %f %f %f','headerlines',31);
-fclose(fid);
-d = cell2mat(params(2:3));
-clear params
-d = mean(d,2) ./ 10000; % in um
+disp('Read parameter file for defocus values');
+params = read_star_data_for_labels(paramfile,{'_rlnDefocusU','_rlnDefocusV'});
+d = mean(cell2mat(params),2) ./ 10000; % Average defocus values in um
 
 %% Estimate noise and signal spectra from the stack
 disp('Read data');
-[h, s] = ReadMRC(stackfile,1,-1);
+[~, s] = ReadMRC(stackfile,1,-1);
 nim = s.nz;
 % in case whole stack is very large, only read in maxnim images to reduce
 % processing time for spectra estimation
-maxnim = 2000;
-if nim > maxnim
-    skip = floor(nim/maxnim);
+if nargin < 4
+    maxnim = floor(nim/2); % Default set to half the stack
 end
+if maxnim > nim
+    disp('Warning: maxnim > number of images in the stack. Using all images for spectra estimation');
+    maxnim = nim;
+end
+skip = floor(nim/maxnim);
+stk = zeros(s.nx,s.ny,maxnim,'single');
 for i = 1:maxnim
     stk(:,:,i) = ReadMRC(stackfile,i*skip,1);
 end
@@ -67,5 +70,5 @@ for i=1:nim
     filtImgs(:,:,i)=real(ifftn(fftn(img).*c./(k+c.^2)));
 end;
 
-writeMRC(filtImgs,s.pixA,[stackfile(1:strfind(imfile,'.')-1) '_ctf_corrected.mrcs']);
+writeMRC(filtImgs,s.pixA,[stackfile(1:strfind(stackfile,'.')-1) '_ctf_corrected.mrcs']);
 passed = 1;
