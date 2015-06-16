@@ -2,7 +2,7 @@
 
 pathout = '/home/vicru/temp/1/';
 pathdata = '/home/vicru/data/';
-caching = 1; % 1 for caching on, 0 caching off, -1 automatic caching
+caching = 0; % 1 for caching on, 0 caching off, -1 automatic caching
 pathcache = '/home/vicru/temp/1/cache/';
 dtheta = 6;
 
