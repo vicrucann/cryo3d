@@ -6,7 +6,7 @@ ncluster = in.ncluster;
 dimensions = in.dimensions;
 
 numrot_ = ceil(numrot / ncluster);
-%numrot_l = numrot - numrot_*(ncluster-1);
+numrot_l = numrot - numrot_*(ncluster-1);
 
 for i=1:ncluster
     r_begin = (i-1)*numrot_ + 1;
@@ -18,7 +18,7 @@ for i=1:ncluster
         r_end = numrot;
         dims(in.broken)=numrot_l;
     end
-    save([pathout varmat int2str(i) '.mat'], 'r_begin', 'r_end', 'dims', 'in');
+    save([in.path_vars in.vars int2str(i) '.mat'], 'r_begin', 'r_end', 'dims', 'in');
 end
 output = 1;
 end

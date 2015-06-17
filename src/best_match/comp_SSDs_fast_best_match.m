@@ -115,10 +115,6 @@ for c = 1:numctf
                     projinds(curriminds(i)) = inds(pind(i));
                     rotinds(curriminds(i)) = rind(i);
                     transinds(curriminds(i)) = currtrans(tind(i));
-                    
-                    % Calculate scale that gave the min ssd
-                    %scales(curriminds(i)) = currprojcoeffs(pind(i),:)*ips(:,:,rind(i),currtrans(tind(i)))*...
-                    %    imcoeffs(curriminds(i),:)' / projnormsc(pind(i)) / 2;
                 end
                 
             else % if distributor is used
@@ -138,24 +134,33 @@ for c = 1:numctf
                 cachevar = ips.window.vname;
                 d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_cache, cachevar,...
                     path_curr, sleeptime, path_res, printout);
-                in_split = struct('numst', numst, 'currstrans', currtrans, 'curriminds', curriminds, ...
+                in_split = struct('numst', numst, 'currtrans', currtrans, 'curriminds', curriminds, ...
                     'onesprojc', onesprojc, 'currprojcoeffs', currprojcoeffs, 'ic', ic, ...
                     'currprojnorms', currprojnorms, 'minscale', minscale, 'maxscale', maxscale, ...
                     'imnorms', imnorms, 'numprojc', numprojc, 'numcurrim', numcurrim, 'numrot', numrot, ...
                     'broken', ips.ibroken(), 'dimensions', ips.dimension(), 'ctype', ips.type(), ...
-                    'ncluster', d.ncluster);
-                in_merge = struct('ncluster', ncluster, 'numcurrim', numcurrim, 'path_res', path_res, ...
+                    'ncluster', d.ncluster, 'path_vars', path_vars, 'vars', vars);
+                in_merge = struct('ncluster', d.ncluster, 'numcurrim', numcurrim, 'path_res', path_res, ...
                     'vars', vars, 'numim', numim, 'curriminds', curriminds, ...
-                    'numprojc', numprojc, 'numrot', numrot, 'numst', numst, 'currtrans', currtrans );
+                    'numprojc', numprojc, 'numrot', numrot, 'numst', numst, 'currtrans', currtrans,...
+                    'inds', inds);
                 
                 out = d.launch(@ssd_split, in_split, @ssd_wrap, @ssd_merge, in_merge);
-                rind = out.rind;
-                pind = out.pind;
-                tind = out.tind;
-                projinds = out.projinds;
-                rotinds = out.rotinds;
-                transinds = out.transinds;
-                SSDs = out.SSDs;
+                minindices = out.minindices;
+                minvalues = out.minvalues;
+                % For each image in the batch
+                pind = zeros(1,numcurrim);
+                rind = zeros(1,numcurrim);
+                tind = zeros(1,numcurrim);
+                for i = 1:numcurrim
+                    [val, ind] = min(minvalues(:,i));
+                    SSDs(curriminds(i)) = val;
+                    minind = minindices(ind,i);
+                    [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
+                    projinds(curriminds(i)) = inds(pind(i));
+                    rotinds(curriminds(i)) = rind(i);
+                    transinds(curriminds(i)) = currtrans(tind(i));
+                end
             end
             
             % to calculate scales, need to sort by rind so that to have sequensial access to ips

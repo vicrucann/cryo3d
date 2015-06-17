@@ -5,17 +5,17 @@ function output = ssd_wrap( file_mat, res_fname, file_dat )
 fprintf('The mat file provided: %s\n', file_mat);
 load(file_mat);
 
-assert(file_dat~=0, 'file_dat variable is empty\n');
+assert(sum(file_dat~='0')>0, 'Error while checking file_dat: format is not correct\n');
 fprintf('The dat file provided: %s\n', file_dat);
 mm = memmapfile(file_dat, 'Format', in.ctype);
-ipsi = reshape(mm.Data, in.dims);
+ipsi = reshape(mm.Data, dims);
 fprintf('Dat file is read\n');
 
 ssdi = inf(in.numprojc, in.numcurrim, r_end - r_begin, in.numst,'single');
 
 fprintf('The calculation loop for r in range [%i %i] and t in range [%i %i]\n', r_begin, r_end, 1, in.numst);
 for r = r_begin:r_end
-    for t = 1:numst
+    for t = 1:in.numst
         % Check if translation exists
         currt = in.currtrans(t);
         if currt < 1
@@ -37,9 +37,9 @@ for r = r_begin:r_end
     end
 end
 fprintf('loop-1 terminated\n');
-minidc = zeros(1,numcurrim);
-minval = zeros(1,numcurrim);
-for i = 1:numcurrim
+minidc = zeros(1,in.numcurrim);
+minval = zeros(1,in.numcurrim);
+for i = 1:in.numcurrim
     currssdi = squeeze(ssdi(:,i,:,:));
     [minval(i), minidc(i)] = min(currssdi(:));
 end
