@@ -1,34 +1,21 @@
-% Function for running fast best match method using subspace approximations
+% Script to run SubspaceEM algorithm
 
-% Created by Nicha C. Dvornek, 09/2014
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Created by Nicha C. Dvornek, 09/2013
+% Last modified 06/2015
 
-% Input parameters, example:
-% pathout = 'G:\workspace\';
-% dbpath = 'C:\Users\vicrucann\Home\server\sample-db';
-% configfile = 'C:\Users\vicrucann\Home\server\sample-db\fast_best_match_config.txt';
-% caching: 1 to turn on, 0 turns off, -1 automatic caching
 
-function passed = best_match(pathout, configfile, caching, pathcache, ...
-    ipaddrs,login,ppath,varmat,sleeptime,resfold,printout)
-% Configure parameters
+function passed = subspaceEM(pathout, configfile)
 
-if (nargin < 3)
-    caching = -1;
-end
+clear; reset(gpuDevice);
 
+% Add paths
 addpath(fullfile(cd, '../src/recon'));
 addpath(fullfile(cd, '../src/mrc'));
-addpath(fullfile(cd, '../src/caching'));
 
-% Stuff for timing
 totaltime = tic;
 
 % Set up - user parameters
-[imfile,imreconfile,ctffile,maxmem,numthreads,...
-    dispflag,substep,reconhalf,reconstartind,normprojint,numruns,...
-    maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,...
-    convtol,t,alignims] = read_config_file(configfile);
+[imfile,imreconfile,ctffile,initprojfile,maxmem,numthreads,dispflag,substep,reconhalf,reconstartind,normprojint,numruns,maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,convtol,t] = read_config_file_subspaceEM(configfile);
 
 % Reconstruction parameters
 l_norm = 0.1;
@@ -37,29 +24,35 @@ iter_lim = 10;
 stop_lim = 0.03;
 
 % Start pool
+%if numthreads > 0 % matlab2013
+%   if matlabpool('size') > 0
+%        matlabpool close;
+%    end
+%    matlabpool('local',numthreads);
+%end
 if (~isempty (gcp('nocreate')) ) % matlab 2014, may not be needed
     delete(gcp('nocreate'));
 end
 parpool(numthreads);
 
-%% Fast best match outer loop
+%% SubspaceEM outer loop
 for run = 1:numruns
-    
+       
     runtime = tic;
     disp(' ');
     disp(['Run ' num2str(run)]);
-    
-    if run > 1
+        
+    if run > 1  
         reset(gpuDevice);
         writefile = [pathout '/' savename '_reinit.mat'];  
         proj_init_from_file([pathout '/' savename '.mat'],initprojfile,writefile,0);
         initprojfile = writefile;        
     end
-    
+  
     % Load things
     if run == 1 
         disp('Loading images and setting up image subspace'); tic;
-        
+
         % Check if pca of images already exists
         pcafile = [imfile(1:strfind(imfile,'.')-1) '_pca.mat'];
         if ~exist(pcafile,'file');
@@ -71,7 +64,7 @@ for run = 1:numruns
             clear data
             save(pcafile,'-v7.3','coeffim','scoreim','latentim');
         end
-
+        
         % Determine subspace size of images
         if ~exist('latentim','var');
             load(pcafile,'latentim');
@@ -129,19 +122,19 @@ for run = 1:numruns
         toc;
     end
     
-    disp('Loading initial structure and templates'); tic;
+    disp('Loading initial structure and projections'); tic;
     if run > 1
         clear proj_struct
         load(initprojfile,'coeffproj','scoreproj','latentproj','maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct','structmask');
     else    
-        % Get the initial model parameters
-        initprojfile = make_init_model(configfile, pathout);
+        % Get initial model parameters      
+        initprojfile = make_init_model(configfile,pathout);
         load(initprojfile,'maskim','mask','coord_axes','data_axes','ctfs','structure','proj_struct','structmask');
-
+        
         % Rescale projection intensities to match images
         if normprojint
-            disp('Rescaling projection intensities');
-            proj_struct = rescale_proj_ints(proj_struct,noisyims);  
+            disp('Rescaling projection intensities and initialize basis');
+            proj_struct = rescale_proj_ints(proj_struct,noisyims);
         end
         
         disp('PCA of initial projections');
@@ -160,13 +153,17 @@ for run = 1:numruns
         numprojcoeffs = find(latentproj == 0,1);
     end
     clear latentproj latent_der latent_der2 latent_der2_avg
-    disp(['Number of template basis elements: ' num2str(numprojcoeffs)]);
+    disp(['Number of projection basis elements: ' num2str(numprojcoeffs)]);
     meanproj = mean(proj_struct,3);
     numproj = size(proj_struct,3);
     projbasis = [meanproj(:), coeffproj(:,1:numprojcoeffs-1)];
     clear coeffproj meanproj;
     projcoeffs = [ones(numproj,1), scoreproj(:,1:numprojcoeffs-1)];
     clear scoreproj;    
+    
+    % Stuff for timing
+    avgitertime = 0;
+    avgssdtime = 0;
     
     % Initialize things
     disp('Initializing things'); tic;
@@ -180,8 +177,8 @@ for run = 1:numruns
     if run == 1
         sigmastart = std(noisyims(:));
     end
-    clear noisyims;   
     sigma1 = sigmastart;
+    clear noisyims;
     sigma2 = sigma1*100;
     sigmaconst = 0;
     sigmathresh1 = 0.05;
@@ -190,12 +187,22 @@ for run = 1:numruns
     numpix = size(imbasis,1);
     numpixsqrt = sqrt(numpix);
     nummaskpix = sum(maskim(:));
-    numctf = max(ctfinds);
-    iminds = (1:numim)';
+    numctf = double(max(ctfinds));
+    alphas = ones(numproj,1)/numproj;
     onesprojcoeff = ones(numprojcoeffs,1,'int8');
     onesproj = ones(numproj,1,'int8');
     proj_est = reshape(projbasis*projcoeffs'.*maskimcol(:,onesproj),[numpixsqrt,numpixsqrt,numproj]);
-    projbasis = projbasis .* maskimcol(:,onesprojcoeff);
+    eps = 1e-20;
+    
+    % Show initial approximated projections
+    if dispflag
+        figure; subplot(1,3,1); imshow(proj_est(:,:,1),[]);
+        subplot(1,3,2); imshow(proj_est(:,:,floor(numproj/2)),[]);
+        subplot(1,3,3); imshow(proj_est(:,:,end),[]);
+        prc = prctile(structure(structure~=0),90);
+        figure; plot_surface(structure,prc);
+        pause(0.05);
+    end
     
     % Set up initial search domains for translations
     disp('Set up translation search domains'); transtime = tic;
@@ -208,20 +215,19 @@ for run = 1:numruns
         imnorms = comp_im_norms(imbasis,imcoeffs,maskim,trans,maxmem);
         toc(calcnorm);
     end
-    
+       
     %% Main loop
-    % preallocate memory
-    wallitertimes = zeros(1,maxnumiter);
-    ssdtimes = zeros(1,maxnumiter);
-    itertimes = zeros(1,maxnumiter);
     for n = 1:maxnumiter
         
         itertime = tic;
         disp(' ');
-        disp(['*****Best Match iter ' num2str(n) '*****']);
+        disp(['*****EM iter ' num2str(n) '*****']);
+        
+        % E-Step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        disp('E-Step');
         
         % Calculate projection norms squared
-        disp('Calc template norms'); pause(0.05); ssdtime = tic; tic;
+        disp('Calc norms of approximated projections'); pause(0.05); ssdtime = tic; tic;
         temp = reshape(imrotate(proj_est,45,'bilinear','crop'), [numpix numproj]);
         projnorms = dot(temp,temp)';
         clear temp;
@@ -229,28 +235,46 @@ for run = 1:numruns
         
         % Compute inner products
         disp('Calc inner products'); pause(0.05); tic;
-        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache, ipaddrs);
+        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
         toc;
         
-        % Calculate the SSDs to find best projection direction and
-        % transformation params
-        disp('Calc SSDs'); pause(0.05);tic;
-        [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
-            ipaddrs,login,ppath,varmat,sleeptime,resfold,printout,pathout);
+        % Calculate the SSDs
+        disp('Calc SSDs'); pause(0.05); tic;
+        [projinds,rotinds,iminds,lpcs_vals,SSDs,transinds] = comp_SSDs_fast(projnorms,projcoeffs,imcoeffs,ips,sigma1,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
         toc;
-        ssdtime = toc(ssdtime);
-        ssdtimes(n) = ssdtime;
-        notssdtime = tic;
         clear ips;
+        ssdtime = toc(ssdtime);
+        avgssdtime = avgssdtime + ssdtime;
+        ssdtimes(n) = ssdtime;
         
-        % Assign last iteration values
+        % Update latent probabilities and related things for M-Step
+        disp('Update E-Step probs'); pause(0.05); tic;
+        lpcs_vals = alphas(projinds) .* lpcs_vals;
+        tempnorm = zeros(numim,1);
+        for k = 1:length(lpcs_vals)
+            tempnorm(iminds(k)) = tempnorm(iminds(k)) + lpcs_vals(k);
+        end
+        lpcs_vals = lpcs_vals ./ (tempnorm(iminds) + eps);
+        clear tempnorm;
+        sumimrt = zeros(numproj,1);
+        for k = 1:length(lpcs_vals)
+            sumimrt(projinds(k)) = sumimrt(projinds(k)) + lpcs_vals(k);
+        end
+        toc;
+        
+        % M-Step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        disp('M-Step'); pause(0.05);
+        
         proj_last = proj_est;
         sigma1_2 = sigma1^2;
         sigma2_2 = sigma2^2;
         
+        % Update mixing coefficients
+        disp('Update mixing coeffs and noise standard deviations'); tic;
+        alphas = sumimrt ./ numim;
+        
         % Update noise variances
-        disp('Update noise standard deviations'); tic;
-        sigma1 = sqrt(1/nummaskpix/numim*(sum(SSDs(:)))) + sigmaconst;
+        sigma1 = sqrt(1/nummaskpix/numim*(lpcs_vals(:)'*SSDs(:))) + sigmaconst;
         if sigma1 < sigmathresh1
             sigma1 = sigmathresh1 + sigmaconst;
         end
@@ -264,34 +288,24 @@ for run = 1:numruns
         disp(['sigma2 = ' num2str(sigma2)]);
         toc;
         
-        % Get number of images aligned to each template
-        disp('Get number of images aligned to each template'); tic;
-        scaleperproj = zeros(numproj,1);
-        for j = 1:numproj
-            scaleperproj(j) = sum(scales(projinds == j).^2);
-        end
+        % Calculate weighted average of rotated images using E-step weights (ALL ON GPU)
+        disp('Calc weighted average of rotated images'); pause(0.05); tic;
+        avgrotim = avg_rot_ims(imbasis,imcoeffs,projinds,rotinds,iminds,lpcs_vals,rots,numpix,numim,numproj,numrot,numimcoeffs,numpixsqrt,trans,transinds);
         toc;
         
-        % Calculate sum of images aligned to each template
-        disp('Calc sum of aligned images for each template'); pause(0.05); tic;
-        sumalignedim = avg_rot_ims(imbasis,imcoeffs,projinds,rotinds,iminds,scales,rots,numpix,numim,numproj,numrot,numimcoeffs,numpixsqrt,trans,transinds);
+        % Update projection basis matrix
+        disp('Update projection basis matrix'); pause(0.05); tic;
+        projbasis = double((sigma2_2*avgrotim+sigma1_2*reshape(proj_struct,[numpix,numproj]))*(projcoeffs*inv(sigma2_2*projcoeffs'*(sumimrt(:,onesprojcoeff).*projcoeffs)+sigma1_2*projcoeffs'*projcoeffs)));
         toc;
         
-        % Update template matrix
-        disp('Update template matrix'); pause(0.05); tic;
-        projbasis = double((sigma2_2*sumalignedim+sigma1_2*reshape(proj_struct,[numpix,numproj]))*...
-            (projcoeffs / (sigma2_2*projcoeffs'*(scaleperproj(:,onesprojcoeff).*projcoeffs)+sigma1_2*(projcoeffs'*projcoeffs) ) ));
-        toc;
-        
-        % Update template coefficients
-        disp('Update template coeffs'); pause(0.05); tic;
-        projcoeffs = double( ( (projbasis'*projbasis)\(projbasis'*(sigma2_2*sumalignedim + sigma1_2*reshape(proj_struct,[numpix,numproj])))./...
-            (sigma2_2*scaleperproj(:,onesprojcoeff)' + sigma1_2))' );
-        clear sumalignedim proj_struct;
+         % Update projection image cofficients
+        disp('Update projection image coefficients'); pause(0.05); tic;
+        projcoeffs = double((inv(projbasis'*projbasis)*(projbasis'*(sigma2_2*avgrotim + sigma1_2*reshape(proj_struct,[numpix,numproj])))./(sigma2_2*sumimrt(:,onesprojcoeff)' + sigma1_2))');
+        clear avgrotim proj_struct;
         toc;
         
         % Update structure
-        disp('Update templates and structure'); pause(0.05); tic;
+        disp('Update structure'); pause(0.05); tic;
         proj_est = reshape(projbasis*projcoeffs',[numpixsqrt,numpixsqrt,numproj]);
         fproj_est = zeros(size(proj_est));
         for j = 1:numproj
@@ -305,7 +319,7 @@ for run = 1:numruns
         structure = structure.*structmask;
         clear fproj_est
         toc;
-        
+            
         % Update projections of structure
         disp('Update structure projections'); pause(0.05); tic;
         fproj_struct = project_in_all_directions_w_ctf_par(structure,mask,coord_axes,ctfs);
@@ -315,19 +329,17 @@ for run = 1:numruns
         end
         clear fproj_struct
         toc;
-        
-        % Masking for next round
         proj_est = proj_est .* maskim(:,:,onesproj);
         projbasis = projbasis .* maskimcol(:,onesprojcoeff);
         
         % Update translation search
         if numtrans > 1
             disp('Update translation search domain'); tic;
-            searchtrans = get_trans_domains(iminds,transinds,ones(numim,1),trans,transwidth,transdelta,numim);
+            searchtrans = get_trans_domains(iminds,transinds,lpcs_vals,trans,transwidth,transdelta,numim);
             toc;
         end
         
-        % Check convergence
+        % Form the projections and check convergence
         disp('Check convergence'); tic;
         [done,err,pind] = check_convergence(proj_last,proj_est,convtol,numproj);
         if pind > 0
@@ -339,24 +351,39 @@ for run = 1:numruns
         
         % Timing stuff
         itertime = toc(itertime);
-        wallitertimes(n) = itertime;
+        itertimes(n) = itertime;
         disp(['Iteration time: ' num2str(itertime) ' seconds']);
-        notssdtime = toc(notssdtime);
-        itertimes(n) = ssdtime + notssdtime;
-        disp(['Serial Iteration time: ' num2str(itertimes(n)) ' seconds']);
+        avgitertime = avgitertime + itertime;
         
+        % Plot results
+        if dispflag
+            figure; subplot(1,3,1); imshow(proj_est(:,:,1),[]);
+            subplot(1,3,2); imshow(proj_est(:,:,floor(numproj/2)),[]);
+            subplot(1,3,3); imshow(proj_est(:,:,end),[]);
+            figure; subplot(1,3,1); imshow(proj_struct(:,:,1),[]);
+            subplot(1,3,2); imshow(proj_struct(:,:,floor(numproj/2)),[]);
+            subplot(1,3,3); imshow(proj_struct(:,:,end),[]);
+            if (n == 1)
+                prc = prctile(structure(structure~=0),90);
+            end
+            figure; plot_surface(structure,prc);
+            pause(0.05)
+        end
+        
+        % Save iteration results
         if mod(n-1,1) == 0
             savename = ['run_' num2str(run) '_iter_' num2str(n)];
-            save([pathout '/' savename],'-v7.3','structure','projbasis','projcoeffs','projinds','rotinds','transinds','scales','searchtrans','err');
+            save([pathout '/' savename],'-v7.3','structure','projbasis','projcoeffs','lpcs_vals','projinds','rotinds','iminds','transinds','searchtrans','err');
         end
         if done == 1
             break;
         end
-
+        
     end
     
-    % Calculate reconstruction using final alignment params and original noisy images
+    % Calculate estimate using final E-step params and original noisy images
     disp(' '); disp('Calc final estimate!'); disp('Load original particle images'); tic;
+    lpcs_vals = lpcs_vals ./ (sumimrt(projinds)+eps);
     noisyims = single(ReadMRC(imreconfile));
     
     %%%% FOR TESTING %%%%%%%%%%%%%%%%%%%%
@@ -372,98 +399,84 @@ for run = 1:numruns
     end
     toc; 
     
-    % Update projection templates using original images
-    disp('Update final projection templates'); tic;
+    disp('Update final projection estimates'); tic;
     noisyims_g = gpuArray(noisyims);
     clear noisyims
-    weights = zeros(numim,1);
-    for j = 1:numproj
-        inds = find(projinds == j);
-        if (~isempty(inds))
-            weights(inds) = scales(inds) ./ sum(scales(inds).^2);
-        end
-    end
-    proj_est = update_templates2(noisyims_g,iminds,projinds,rotinds,transinds,weights,rots,trans,numpixsqrt,numim,numproj);
+    proj_est = update_templates2(noisyims_g,iminds,projinds,rotinds,transinds,lpcs_vals,rots,trans,numpixsqrt,numim,numproj);
+    lpcs_vals = lpcs_vals .* sumimrt(projinds);
     toc;
     
-    % Calculate final reconstruction with original images
+    % Reconstruct
     disp('Final reconstruction'); tic;
     fproj_est = zeros(size(proj_est));
     for j = 1:numproj
         fproj_est(:,:,j) = fftshift(fft2(proj_est(:,:,j)));
     end
+    numfp = size(fproj_est,3);
     takeoutinds = [];
     zeroim = zeros(numpixsqrt,numpixsqrt);
-    % Take out directions that have no images to speed up reconstruction
-    for j = 1:numproj
+    for j = 1:numfp
         if isequal(fproj_est(:,:,j),zeroim)
             takeoutinds = [takeoutinds; j];
         end
     end
-    keepinds = 1:numproj;
+    keepinds = 1:numfp;
     keepinds(takeoutinds) = [];
     structure_final = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds),ctfs(:,:,mod(keepinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
     toc;
-        
-    % Display stats summary
+    
+    % Display final results and stats summary
+    if dispflag
+        figure; subplot(1,3,1); imshow(proj_est(:,:,1),[]);
+        subplot(1,3,2); imshow(proj_est(:,:,floor(numproj/2)),[]);
+        subplot(1,3,3); imshow(proj_est(:,:,end),[]);
+        prc = prctile(structure_final(structure_final~=0),90);
+        figure; plot_surface(structure_final,prc);
+    end
+    avgitertime = avgitertime / n;
+    avgssdtime = avgssdtime / n;
     runtime = toc(runtime);
-    disp(['Average time per serial iteration: ' num2str(mean(itertimes(itertimes~=0))) ' seconds']);
-    disp(['Average time per serial SSD calc: ' num2str(mean(ssdtimes(ssdtimes~=0))) ' seconds']);
-    disp(['Average wall time per iteration: ' num2str(mean(wallitertimes(wallitertimes~=0))) ' seconds']);
+    disp(['Average time per iteration: ' num2str(avgitertime) ' seconds']);
+    disp(['Average time per SSD calc: ' num2str(avgssdtime) ' seconds']);
     disp(['Total wall time: ' num2str(runtime) ' seconds']);
     
     % Save
-    s = strfind(imfile,'\');
-    if isempty(s)
-        s = strfind(imfile,'/');
+    dotinds = strfind(imfile,'.');
+    slashinds = strfind(imfile,'/');
+    if isempty(slashinds)
+        slashinds = strfind(imfile,'\');
     end
-    if isempty(s)
-        s = 0;
+    if isempty(slashinds)
+        slashinds = 0;
     end
-    if strcmp(imfile(end-3:end),'.mat') || strcmp(imfile(end-3:end),'.mrc')
-        savename = imfile(s(end)+1:end-4);
-    elseif strcmp(imfile(end-4:end),'.mrcs')
-        savename = imfile(s(end)+1:end-5);
-    else
-        savename = imfile(s(end)+1:end);
-    end
-    savename = [savename '_fastbm_' num2str(numimcoeffs) '_' num2str(numprojcoeffs) '_' num2str(rotstep) 'd_' num2str(transmax) num2str(transdelta) num2str(transwidth) 't_' num2str(run) 'x'];
+    savename = imfile(slashinds(end)+1:dotinds(end)-1);
+    savename = [savename '_subspaceEM_' num2str(numimcoeffs) '_' num2str(numprojcoeffs) '_' num2str(rotstep) 'd_' num2str(transmax) num2str(transdelta) num2str(transwidth) 't_' num2str(run) 'x'];
     if substep > 0
         savename = [savename '_sub' num2str(substep)];
     end
     if reconhalf
         savename = [savename '_h' num2str(reconstartind)];
     end
-    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','weights','projinds','rotinds','rots','SSDs','runtime','wallitertimes','itertimes','ssdtimes','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','scales','numprojcoeffs','numimcoeffs','t','imfile','initprojfile','imreconfile','convtol','coord_axes','structmask');
+    save([pathout '/' savename ,'.mat'],'-v7.3','structure_final','structure','proj_struct','proj_est','alphas','lpcs_vals','projinds','rotinds','rots','iminds','SSDs','totaltime','itertimes','avgitertime','ssdtimes','avgssdtime','n','sigma1','sigma2','projbasis','projcoeffs','searchtrans','transinds','trans','numprojcoeffs','numimcoeffs','t','imfile','initprojfile','imreconfile','convtol','coord_axes','structmask');
     
     % Some clean up
     clear structure_final structure proj_est proj_last
     
 end
 
-% Recon with largest mask possible for FSC calculations
+% Recon with largest mask possible for FSC calcs
 disp('Reconstruct one more time with largest mask possible');
 mask = get_mask_struct_ncd([numpixsqrt numpixsqrt numpixsqrt],1); % reconstruct with largest mask possible
 recon = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds),ctfs(:,:,mod(keepinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
 delete(gcp('nocreate'));
-save([pathout '/' savename '.mat'],'-append','recon');
+save([pathout '/' savename ,'.mat'],'-append','recon');
 [~,h] = ReadMRC(imreconfile,1,-1);
-writeMRC(recon,h.pixA,[pathout '/' 'fbm_recon.mrc'])
+writeMRC(recon,h.pixA,[pathout '/' 'subspaceEM_recon.mrc']);
 
 if ~isequal(structmask,ones(size(structmask)))
-    writeMRC(recon.*structmask,h.pixA,[pathout '/' 'fbm_recon_masked.mrc']);
+    writeMRC(recon.*structmask,h.pixA,[pathout '/' 'subspaceEM_recon_masked.mrc']);
 end
 
-% Align images and save
-if alignims
-    disp('Aligning images to best-matched projection and saving');
-    noisyims = single(ReadMRC(imreconfile));
-    aligned_ims = align_images(noisyims,rotinds,transinds,rots,trans);
-    %writeMRC(aligned_ims,h.pixA,[pathout 'fbm_aligned_ims.mrcs']);
-    savename_h = 'fbm_aligned_ims.mat';
-    save([pathout '/' savename_h], '-v7.3', 'aligned_ims', 'recon', 'projinds', 'coord_axes');
-end
-
-disp(['Total wall time for best_match.m: ' num2str(toc(totaltime)/60/60) ' hrs']);
+disp(['Total wall time for subspaceEM.m: ' num2str(toc(totaltime)/60/60) ' hrs']);
 
 passed = 1;

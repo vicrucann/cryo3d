@@ -1,4 +1,9 @@
-function [imfile,imreconfile,ctffile,maxmem,numthreads,dispflag,substep,reconhalf,reconstartind,normprojint,numruns,maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,convtol,f,alignims] = read_config_file(filename)
+% Function to read config file for subspaceEM/best_match code
+
+% Created by Nicha C. Dvornek, 09/2014
+% Last modified 06/0215
+
+function [imfile,imreconfile,ctffile,maxmem,numthreads,dispflag,substep,reconhalf,reconstartind,normprojint,numruns,maxnumiter,rotstart,rotstep,rotend,transmax,transdelta,transwidth,convtol,t,alignims] = read_config_file(filename)
 
 fileID = fopen(filename);
 if fileID < 0
@@ -90,7 +95,7 @@ end
 
 ind = find(strcmp(vars,'numruns'));
 if isempty(ind)
-    numruns = 1;
+    numruns = 2;
 else
     numruns = str2double(C{2}{ind});
 end
@@ -151,11 +156,11 @@ else
     convtol = str2double(C{2}{ind});
 end
 
-ind = find(strcmp(vars,'f'));
+ind = find(strcmp(vars,'t'));
 if isempty(ind)
-    f = 0.0001;
+    t = 0.0001;
 else
-    f = str2double(C{2}{ind});
+    t = str2double(C{2}{ind});
 end
 
 ind = find(strcmp(vars,'alignims'));

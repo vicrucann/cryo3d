@@ -33,26 +33,21 @@ end
 addpath(fullfile(cd, '../src/preprocessing'));
 addpath(fullfile(cd, '../src/mrc'));
 
-%% Data Params (Ideally, would only need paramfile, stackfile as input)
-volt = 300; % in kV rlnVoltage 
-ampcont = 0.1; % rlnAmplitudeContrast 
-Cs = 0.0; % in mm rlnSphericalAberration 
+%% Data Params (read from paramfile in .star format)
+data = read_star_data_for_labels(paramfile,{'_rlnVoltage','_rlnAmplitudeContrast','_rlnSphericalAberration'},1);
+volt = data{1}; % _rlnVoltage, in kV
+ampcont = data{2}; % _rlnAmplitudeContrast 
+Cs = data{3}; % _rlnSphericalAberration, in mm 
 
 %% Preprocessing Params
 K = num_clusters; % num ctf clusters
 
 %% CTF CLUSTERING
 
-% Load CTF parameter estimates for ctfdataset
-% (THIS WORKS ONLY FOR THE EXAMPLE .STAR FILE - HOPEFULLY WE CAN MODIFY SO
-% WE CAN READ ALL THE DATA PARAMS IN FROM THE .STAR FILE)
-% rlnDefocusU  and rlnDefocusV 
-disp('Read parameter file');
-fid = fopen(paramfile);
-params = textscan(fid,'%f %f %f %f %f %f %f %f %f %s %f %f %f %f %s %s %f %f %f %f %f %f %f %f %f %f %f','headerlines',31);
-fclose(fid);
-ctfdata = cell2mat(params(2:3)) / 10000; % Defocus values in .star file are in angstrom; need values in um
-clear params
+% Load defocus values (_rlnDefocusU and _rlnDefocusV) 
+disp('Read parameter file for defocus values');
+params = read_star_data_for_labels(paramfile,{'_rlnDefocusU','_rlnDefocusV'});
+ctfdata = cell2mat(params) / 10000; % Defocus values in .star file are in angstrom; need values in um
 
 % Cluster CTFs into K sets
 disp('K-means clustering of defocus values');
@@ -91,7 +86,7 @@ disp('DONE.\n');
 
 % Some initial things
 ctfParams = cell(K,1);
-[h s] = ReadMRC(stackfile,1,-1);
+[h, s] = ReadMRC(stackfile,1,-1);
 Apix = s.pixA;
 imgSx = s.nx;
 
@@ -180,7 +175,6 @@ if saveflag
         Apix = Apix* s.nx / imgSx;
     end
     ctfs = zeros(imgSx,imgSx,K,'single');
-    ind = 1;
     for i = 1:K
         ctfs(:,:,i) = CTF(imgSx,Apix,ctfParams{i,1});
     end

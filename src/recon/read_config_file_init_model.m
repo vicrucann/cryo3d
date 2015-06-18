@@ -47,7 +47,7 @@ end
 ind = find(strcmp(vars,'coordfile'));
 if isempty(ind)
     if sampdeg == 0
-        disp('Error: No coordinates file specified (coordfile)');
+        disp('Error: No coordinates file (coordfile) or angular sampling (sampdeg) specified ');
         return
     end
     coordfile = '';

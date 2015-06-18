@@ -38,7 +38,7 @@ pixfromedge = 4; % for spherical mask, >0
 dispflag = 0;
 
 % Algorithm parameters
-f = 0.0001; % threshold for scree test
+t = 0.0001; % threshold for scree test
 numruns = 2; %outer loop
 maxnumiter = 10; % inner loop
 convtol = 0.01; % convergence tol for innter loop, percentage of change 

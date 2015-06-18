@@ -9,7 +9,8 @@ function coord_axes=create_approx_uniform_axes_whole_sphere(dtheta,disp_flag,fig
 %   Always contains the vertical direction as a the first
 %   normal.
 %   Code history:
-%       Modified from create_uiform_axes by H. Tagare  08/11/10.
+%       Original code from create_uniform_axes by H. Tagare  08/11/10.
+%       Modified to whole sphere by Nicha C. Dvornek, 03/2014 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 coord_axes=[1 0 0 0 1 0 0 0 1]';

@@ -1,5 +1,8 @@
-% Function to be used in EM code
+% Function to be used in subspaceEM/bestmatch code
 % Computes weighted average of rotated images for each projection template
+
+% Created by Nicha C. Dvornek, 08/2013
+% Last modified 03/2015
 
 
 function avgrotim = avg_rot_ims(imbasis,imcoeffs,projinds,rotinds,iminds,lpcs_vals,rots,numpix,numim,numproj,numrot,numimcoeffs,numpixsqrt,trans,transinds)

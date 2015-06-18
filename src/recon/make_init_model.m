@@ -1,4 +1,4 @@
-% Function to be used in fast_best_match.m to get all the initial model
+% Function to be used in subspaceEM/bestmatch to get all the initial model
 % related things from just an initial structure and config parameters
 
 % Created by Nicha C. Dvornek, 01/2015

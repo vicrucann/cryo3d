@@ -1,3 +1,8 @@
+% Function to be used in conjugate gradient reconstruction
+
+% Original code by Hemant Tagare
+% Modified for parallel processing by Nicha C. Dvornek, 04/2014
+
 function dqd=get_dQd_with_ctf_par(d,mask_r,data_axes,l_norm,l_smooth,ctfs)
 
 n_proj=size(data_axes,2);

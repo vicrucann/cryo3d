@@ -4,6 +4,9 @@ function mask=get_mask_struct_ncd(xsize,pixtoedge)
 %  Works only in 3D and 2D 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Original code by Hemant Tagare
+% Modified (to specify mask size) by Nicha C. Dvornek, 10/2013
+
 mask=struct('bin',[],'r',0);
 
 if length(xsize)==3
