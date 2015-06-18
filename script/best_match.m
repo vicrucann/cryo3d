@@ -19,7 +19,8 @@ end
 
 addpath(fullfile(cd, '../src/recon'));
 addpath(fullfile(cd, '../src/mrc'));
-addpath(fullfile(cd, '../src/caching'));
+%addpath(fullfile(cd, '../src/caching'));
+addpath(fullfile(cd, '../src/cacharr'));
 
 % Stuff for timing
 totaltime = tic;

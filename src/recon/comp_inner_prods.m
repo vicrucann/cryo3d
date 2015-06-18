@@ -59,8 +59,11 @@ else            % Rotations + translations
     fprintf('Number of GPU batches: %i\n', numbatches);
     fprintf('Total memory size of all batches in Gb, less than: %i\n', floor(neededmem/1024^3));
     
-    ips = Cacharr([numprojcoeffs,numimcoeffs,numrot,numtrans],...
-        pathcache, 'single', numbatches, 3, caching, 'ips');
+    ips = CachedNDArray([numprojcoeffs,numimcoeffs,numrot,numtrans],...
+        'single', 3, 'ips', pathcache, numbatches, caching, 1);
+    %ips_test = zeros(numprojcoeffs,numimcoeffs,numrot,numtrans,'single');
+    %ips = Cacharr([numprojcoeffs,numimcoeffs,numrot,numtrans],...
+    %    pathcache, 'single', numbatches, 3, caching, 'ips');
     %ips = zeros(numprojcoeffs,numimcoeffs,numrot,numtrans,'single');
     
     fprintf('Percent completed: ');
@@ -111,14 +114,16 @@ else            % Rotations + translations
         ips_g = permute(ips_g,[2 1 3 4]);
         ips_g = 2*ips_g;
         
-        %if b < numbatches
-        %    ips(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
-        %else
-        %    ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g);
-        %end
+        if b < numbatches
+           ips(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
+           %ips_test(:,:,batchsize*(b-1)+1:batchsize*b,:) = gather(ips_g);
+        else
+           ips(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g);
+           %ips_test(:,:,batchsize*(b-1)+1:end,:) = gather(ips_g);
+        end
         
-        chunk = single(gather(ips_g));
-        ips.write_cached_array_chunk(chunk, b);
+        %chunk = single(gather(ips_g));
+        %ips.write_cached_array_chunk(chunk, b);
         clear chunk;
         
         perc = round(b/numbatches*100);

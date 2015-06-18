@@ -4,7 +4,7 @@
 % The function is edited to be compatible with caching data structure
 
 function [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
-    ipaddrs,login,ppath,varmat,sleeptime,resfold,printout,pathout)
+    ipaddrs,login,path_rem,vars,sleeptime,path_res,printout,pathout)
 
 % Initializations
 projinds = -ones(numim,1);
@@ -47,7 +47,7 @@ for c = 1:numctf
         end
         batchsize = ceil(numsinds / numbatches);
         numbatches = ceil(numsinds / batchsize);
-        fprintf('\nNumber of images per batch to process: %i\n', numbatches);
+        %fprintf('\nNumber of images per batch to process: %i\n', numbatches);
         
         % For each batch of images
         for b = 1:numbatches
@@ -89,8 +89,8 @@ for c = 1:numctf
                         
                         % First calculate the inner products between
                         % projections and current images
-                        currips = currprojcoeffs*(ips.read_cached_array([0,0,r,currt])*ic);
-                        %currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
+                        %currips = currprojcoeffs*(ips.read_cached_array([0,0,r,currt])*ic);
+                        currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
                         
                         %                   % Calculate scale and adjust
                         s = currips ./ currprojnorms / 2;
@@ -101,69 +101,66 @@ for c = 1:numctf
                         ssds(:,:,r,t) = currimnorms + s.^2.*currprojnorms - s.*currips;
                     end
                 end
+                
+                % For each image in the batch
+                pind = zeros(1,numcurrim);
+                rind = zeros(1,numcurrim);
+                tind = zeros(1,numcurrim);
+                for i = 1:numcurrim
+                    % Find the min ssd and get the indices of the parameters of
+                    % the best batch
+                    currssds = squeeze(ssds(:,i,:,:));
+                    [SSDs(curriminds(i)),minind] = min(currssds(:));
+                    [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
+                    projinds(curriminds(i)) = inds(pind(i));
+                    rotinds(curriminds(i)) = rind(i);
+                    transinds(curriminds(i)) = currtrans(tind(i));
+                end
+                
             else % if distributor is used
-                remmat = 'comp_SSDs_fast_best_match_wrapper';
-                bashscript = [fullfile(cd, '../src/rshell-mat/') 'dhead.sh'];
-                % split and save data to files
-                fprintf('\n\nCalculation using remotes \n');
-                numrot_ = ceil(numrot / ncluster);
-                numrot_l = numrot - numrot_*(ncluster-1); % size of last might be different
-                for i=1:ncluster
-                    r_begin = (i-1)*numrot_ + 1;
-                    dims = ips.dimension;
-                    if i~=ncluster
-                        r_end = numrot_ * i;
-                        dims(ips.broken)=numrot_;
-                    else % the last cluster
-                        r_end = numrot_l;
-                        dims(ips.broken)=numrot_l;
-                    end
-                    mm = memmapfile([ips.path ips.vname '_' num2str(i) '.dat'], 'Format', ips.type);
-                    ipsi = reshape(mm.Data, dims);
-                    save([pathout varmat int2str(i) '.mat'], 'r_begin', 'r_end', 'numst', 'currtrans', 'curriminds', 'onesprojc', 'currprojcoeffs', 'ic',...
-                        'currprojnorms', 'minscale', 'maxscale', 'imnorms', 'numprojc', 'numcurrim', 'numrot', 'ipsi');
-                end
-                clear ipsi mm;
-                % launch the bash scripts
-                pathsrc = fullfile(cd, '../src/rshell-mat/');
-                system(['chmod u+x ' bashscript]);
-                if printout
-                    cmdStr = [bashscript ' ' login ' ' ppath ' ' ipaddrs ' ' pathsrc ' ' remmat ' ' pathout ' ' varmat ' ' int2str(sleeptime) ' ' resfold];
-                else
-                    cmdStr = [bashscript ' ' login ' ' ppath ' ' ipaddrs ' '...
-                        pathsrc ' ' remmat ' ' pathout ' ' varmat ' ' int2str(sleeptime) ' ' resfold '>' remmat '.log 2>&1'];
-                end
-                % perform the command
-                system(cmdStr);
+                addpath(fullfile(cd, '../src/dist-wrappers'));
+                addpath(fullfile(cd, '../src/rshell-mat'));
+                fprintf('\nCalculation using remotes\n');
                 
-                % merge the results (ssds = [ssdi1 ssdi2 ...])
-                for i=1:ncluster
-                    load([resfold '/' 'result_' varmat int2str(i) '.mat']);
-                    if i~=ncluster
-                        ssds(:,:, (i-1)*numrot_+1 : numrot_ * i, :) = ssdi;
-                    else
-                        ssds(:,:, (i-1)*numrot_ + 1 : numrot_l, :) = ssdi;
-                    end
-                end
-            end
-                 
-            % For each image in the batch
-            pind = zeros(1,numcurrim);
-            rind = zeros(1,numcurrim);
-            tind = zeros(1,numcurrim);
-            for i = 1:numcurrim
-                % Find the min ssd and get the indices of the parameters of
-                % the best batch
-                currssds = squeeze(ssds(:,i,:,:));
-                [SSDs(curriminds(i)),minind] = min(currssds(:));
-                [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
-                projinds(curriminds(i)) = inds(pind(i));
-                rotinds(curriminds(i)) = rind(i);
-                transinds(curriminds(i)) = currtrans(tind(i));
+                currfold = pwd; cd('../src/rshell-mat/');
+                path_curr = pwd; path_curr = fixslash(path_curr);
+                cd(currfold); cd('../src/best_match/');
+                srcfold = pwd; srcfold = fixslash(srcfold);
+                cd(currfold);
+                pathsrc = srcfold;
+                path_vars = pathout;
                 
-                % Calculate scale that gave the min ssd
-                %scales(curriminds(i)) = currprojcoeffs(pind(i),:)*ips(:,:,rind(i),currtrans(tind(i)))*...
-                %    imcoeffs(curriminds(i),:)' / projnormsc(pind(i)) / 2;
+                path_cache = ips.window.cpath;
+                cachevar = ips.window.vname;
+                d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_cache, cachevar,...
+                    path_curr, sleeptime, path_res, printout);
+                in_split = struct('numst', numst, 'currtrans', currtrans, 'curriminds', curriminds, ...
+                    'onesprojc', onesprojc, 'currprojcoeffs', currprojcoeffs, 'ic', ic, ...
+                    'currprojnorms', currprojnorms, 'minscale', minscale, 'maxscale', maxscale, ...
+                    'imnorms', imnorms, 'numprojc', numprojc, 'numcurrim', numcurrim, 'numrot', numrot, ...
+                    'broken', ips.ibroken(), 'dimensions', ips.dimension(), 'ctype', ips.type(), ...
+                    'ncluster', d.ncluster, 'path_vars', path_vars, 'vars', vars);
+                in_merge = struct('ncluster', d.ncluster, 'numcurrim', numcurrim, 'path_res', path_res, ...
+                    'vars', vars, 'numim', numim, 'curriminds', curriminds, ...
+                    'numprojc', numprojc, 'numrot', numrot, 'numst', numst, 'currtrans', currtrans,...
+                    'inds', inds);
+                
+                out = d.launch(@ssd_split, in_split, @ssd_wrap, @ssd_merge, in_merge);
+                minindices = out.minindices;
+                minvalues = out.minvalues;
+                % For each image in the batch
+                pind = zeros(1,numcurrim);
+                rind = zeros(1,numcurrim);
+                tind = zeros(1,numcurrim);
+                for i = 1:numcurrim
+                    [val, ind] = min(minvalues(:,i));
+                    SSDs(curriminds(i)) = val;
+                    minind = minindices(ind,i);
+                    [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
+                    projinds(curriminds(i)) = inds(pind(i));
+                    rotinds(curriminds(i)) = rind(i);
+                    transinds(curriminds(i)) = currtrans(tind(i));
+                end
             end
             
             % to calculate scales, need to sort by rind so that to have sequensial access to ips
@@ -172,7 +169,7 @@ for c = 1:numctf
             s_tind = tind(i_rind);
             s_curriminds = curriminds(i_rind);
             for i = 1:numcurrim
-                scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:)* ips.read_cached_array([0, 0, s_rind(i), currtrans(s_tind(i)) ]) *...
+                scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:) * ips(:,:,s_rind(i),currtrans(s_tind(i)))  *...
                     imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2;
             end
             
@@ -185,4 +182,17 @@ end
 
 scales(scales < minscale) = minscale;
 scales(scales > maxscale) = maxscale;
+end
+
+function foldname = fixslash(foldname)
+slash = foldname(end);
+if (~isequal(slash, '\') && ~isequal(slash, '/'))
+    archstr = computer('arch');
+    if (isequal(archstr(1:3), 'win')) % Windows
+        foldname = [foldname '\'];
+    else % Linux
+        foldname = [foldname '/'];
+    end
+end
+end
 
