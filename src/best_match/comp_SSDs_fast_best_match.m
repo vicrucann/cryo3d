@@ -18,6 +18,19 @@ currmem = monitor_memory_whos;
 minscale = 1.0;
 maxscale = 1.0;
 
+% initialize distributor if needed
+addpath(fullfile(cd, '../src/dist-wrappers'));
+addpath(fullfile(cd, '../src/rshell-mat'));
+path_vars = pathout;
+currfold = pwd; 
+cd('../src/rshell-mat/'); path_curr = pwd; path_curr = fixslash(path_curr);
+cd(currfold);
+
+d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_curr, sleeptime, path_res, printout);
+if (d.ncluster > 1)
+    d.scp_cached_data(ips);
+end
+
 % For each CTF class
 for c = 1:numctf
     
@@ -69,10 +82,7 @@ for c = 1:numctf
             currprojnorms = projnormsc(:,ones(numcurrim,1));
             ic = imcoeffs(curriminds,:)';
             
-            % if using distributor, break data
-            [ncluster ~] = find(ipaddrs==' ');
-            ncluster = size(ncluster,2)+1;
-            if ncluster == 1 % if distributor is not used
+            if d.ncluster == 1 % if distributor is not used
                 % For each rotation
                 for r = 1:numrot
                     % For each translation in the current search set
@@ -118,22 +128,6 @@ for c = 1:numctf
                 end
                 
             else % if distributor is used
-                addpath(fullfile(cd, '../src/dist-wrappers'));
-                addpath(fullfile(cd, '../src/rshell-mat'));
-                fprintf('\nCalculation using remotes\n');
-                
-                currfold = pwd; cd('../src/rshell-mat/');
-                path_curr = pwd; path_curr = fixslash(path_curr);
-                cd(currfold); cd('../src/best_match/');
-                srcfold = pwd; srcfold = fixslash(srcfold);
-                cd(currfold);
-                pathsrc = srcfold;
-                path_vars = pathout;
-                
-                path_cache = ips.window.cpath;
-                cachevar = ips.window.vname;
-                d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_cache, cachevar,...
-                    path_curr, sleeptime, path_res, printout);
                 in_split = struct('numst', numst, 'currtrans', currtrans, 'curriminds', curriminds, ...
                     'onesprojc', onesprojc, 'currprojcoeffs', currprojcoeffs, 'ic', ic, ...
                     'currprojnorms', currprojnorms, 'minscale', minscale, 'maxscale', maxscale, ...

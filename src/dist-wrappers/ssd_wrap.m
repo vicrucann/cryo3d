@@ -1,14 +1,14 @@
-function output = ssd_wrap( file_mat, res_fname, file_dat )
+function output = ssd_wrap( file_mat, res_fname, cache_vname, ncache )
 %UNTITLED7 Summary of this function goes here
 %   Detailed explanation goes here
 
 fprintf('The mat file provided: %s\n', file_mat);
 load(file_mat);
 
-assert(sum(file_dat~='0')>0, 'Error while checking file_dat: format is not correct\n');
-fprintf('The dat file provided: %s\n', file_dat);
-mm = memmapfile(file_dat, 'Format', in.ctype);
-ipsi = reshape(mm.Data, dims);
+%assert(sum(file_dat~='0')>0, 'Error while checking file_dat: format is not correct\n');
+%fprintf('The dat file provided: %s\n', file_dat);
+%mm = memmapfile(file_dat, 'Format', in.ctype);
+%ipsi = reshape(mm.Data, dims);
 fprintf('Dat file is read\n');
 
 ssdi = inf(in.numprojc, in.numcurrim, r_end - r_begin, in.numst,'single');
@@ -26,7 +26,9 @@ for r = r_begin:r_end
         currimnorms = currimnorms(in.onesprojc,:);
         % First calculate the inner products between
         % projections and current images
-        currips = in.currprojcoeffs*(ipsi(:, :, r - r_begin + 1, currt) * in.ic);
+        r_idx = r - r_begin + 1;
+        
+        currips = in.currprojcoeffs*(ipsi(:, :, r_idx, currt) * in.ic);
         
         % Calculate scale and adjust
         s = currips ./ in.currprojnorms / 2;
