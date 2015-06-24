@@ -72,8 +72,8 @@ remmat = 'comp_SSDs_fast_best_match_wrapper';
 varmat = 'ssd_fbm';
 
 % pause interval (will be run 50 times)
-sleeptime = 45;
+sleeptime = 10;
 
 % folder name where results will be copied to
 resfold = [pathout 'result_distr'];
-printout = 1;
+printout = 0;
