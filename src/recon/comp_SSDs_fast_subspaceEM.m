@@ -4,7 +4,7 @@
 % Created by Nicha C. Dvornek, 11/2013
 % Last modified 03/2015
 
-function [projinds,rotinds,iminds,lpcs_vals,SSDs,transinds] = comp_SSDs_fast(projnorms,projcoeffs,imcoeffs,ips,sigma1,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem)
+function [projinds,rotinds,iminds,lpcs_vals,SSDs,transinds] = comp_SSDs_fast_subspaceEM(projnorms,projcoeffs,imcoeffs,ips,sigma1,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem)
 
 projinds = -ones(numim,1);
 rotinds = zeros(numim,1);

@@ -235,12 +235,12 @@ for run = 1:numruns
         
         % Compute inner products
         disp('Calc inner products'); pause(0.05); tic;
-        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
+        ips = comp_inner_prods_nocache(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans);
         toc;
         
         % Calculate the SSDs
         disp('Calc SSDs'); pause(0.05); tic;
-        [projinds,rotinds,iminds,lpcs_vals,SSDs,transinds] = comp_SSDs_fast(projnorms,projcoeffs,imcoeffs,ips,sigma1,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
+        [projinds,rotinds,iminds,lpcs_vals,SSDs,transinds] = comp_SSDs_fast_subspaceEM(projnorms,projcoeffs,imcoeffs,ips,sigma1,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem);
         toc;
         clear ips;
         ssdtime = toc(ssdtime);
