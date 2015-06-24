@@ -1,0 +1,31 @@
+% Image Data
+imfile = C:\Users\Nicha\Documents\Data\10K_Hetero_Ribo\noisyims\fullstack.mrcs
+%ctffile = C:\Users\Nicha\Documents\Data\10K_Hetero_Ribo\ctfdata.mat
+
+% Initial model
+structfile = C:\Users\Nicha\Documents\Data\10K_Hetero_Ribo\meanVol.mrc
+coordfile = C:\Users\Nicha\Documents\Data\10K_Hetero_Ribo\coord_axes_309.mat
+pixfromedge = 4
+
+% System parameters
+maxmem = 26624 % in MB
+numthreads = 6
+dispflag = 0 
+substep = 0
+reconhalf = 0
+reconstartind = 0
+normprojint = 1
+numruns = 2
+convtol = 0.01
+t = 0.0002
+numstruct = 3
+
+% Search Parameters
+maxnumiter = 12
+rotstart = 0.5
+rotstep = 4
+rotend = 359.9
+transmax = 4
+transdelta = 1
+transwidth = 1
+
