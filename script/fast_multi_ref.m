@@ -275,6 +275,7 @@ for run = 1:numruns
             keepinds(takeoutinds) = [];
             structure(:,:,:,s) = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,keepinds),data_axes(:,keepinds),ctfs(:,:,mod(keepinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
             structure(:,:,:,s) = lpf_at_res_sigma(structure(:,:,:,s),h.pixA,h.pixA*3,1); %%% TESTING LPF %%% 
+            structure(:,:,:,s) = structure(:,:,:,s).*structmask;
             toc; 
             
             disp(['Get projections of initial model ' num2str(s)]); tic;
@@ -604,6 +605,9 @@ for s = 1:numstruct
     currinds = keepinds(keepinds >= (s-1)*numprojstruct+1 & keepinds <= s*numprojstruct);
     recon(:,:,:,s) = reconstruct_by_cg_w_ctf_par(fproj_est(:,:,currinds),data_axes(:,currinds-(s-1)*numprojstruct),ctfs(:,:,mod(currinds-1,numctf)+1),mask,l_norm,l_smooth,iter_lim,stop_lim);
     writeMRC(recon(:,:,:,s),h.pixA,['fmr_recon_' num2str(s) '.mrc']);
+    if ~isequal(structmask,ones(size(structmask)))
+        writeMRC(recon(:,:,:,s).*structmask,h.pixA,[pathout '/' 'fmr_recon_' num2str(s) '_masked.mrc']);
+    end
 end
 % matlabpool close  % matlab2013
 delete(gcp('nocreate')); 
