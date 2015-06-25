@@ -7,6 +7,18 @@
 `/src` : `*.m` functions, arranged by the different pipeline step, e.g., preprocessing, best_match, etc; `mrc` folder contains function to read-write `*.mrc` files  
 `/test` : temporal functions that are under development, subject to delete for the final release version   
 
+### Source code  
+
+To download the source code of the pipeline, run the following commands:  
+```
+git clone https://github.com/vicrucann/cryo3d
+``` 
+To get the submodules (cacharr and rshell-mat):  
+```
+cd cryo3d
+git submodule update --init --recursive
+```
+
 ### Running the whole pipeline
 
 **User must provide configuration file as an input for the `\script\cryo3d.m` function (you can find an example of such file for both Windows and Linux in `script` folder.**    
