@@ -10,7 +10,7 @@ maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
 maxmem = 30624;
 
 numthreads = 12;
-rotstep = 1.5;
+rotstep = 1;
 transmax = 4;
 
 %% Preprocessing
@@ -64,17 +64,17 @@ ipaddrs = [];
 login = 'cryo';
 
 % workplace directory on remotes (same for all remotes)
-ppath = '/home/cryo/dop';
+ppath = '/home/cryo/test_cryo3d';
 
 % function matlab name that will be launched on remotes
 remmat = 'mandelbrot';
 
 % variable name where all the data will be saved to (in pathout folder)
-varmat = 'mnd';
+varmat = 'ssd_fbm';
 
-% pause interval (will be run 50 times)
-sleeptime = 5;
+% pause interval (will be run 1000 times)
+sleeptime = 10;
 
 % folder name where results will be copied to
-resfold = [pathout 'dres'];
-printout = 0;
+resfold = [pathout 'result_distr'];
+printout = 1;
