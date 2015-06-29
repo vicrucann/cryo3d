@@ -25,6 +25,7 @@ path_vars = pathout;
 currfold = pwd; 
 cd('../src/rshell-mat/'); path_curr = pwd; path_curr = fixslash(path_curr);
 cd(currfold);
+debug = 1;
 
 d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_curr, sleeptime, path_res, printout);
 if (d.ncluster > 1)
@@ -82,6 +83,7 @@ for c = 1:numctf
             ic = imcoeffs(curriminds,:)';
             
             if d.ncluster == 1 % if distributor is not used
+            %if (debug)
                 ssds = inf(numprojc,numcurrim,numrot,numst,'single');
                 % For each rotation
                 for r = 1:numrot
@@ -125,8 +127,8 @@ for c = 1:numctf
                     projinds(curriminds(i)) = inds(pind(i));
                     rotinds(curriminds(i)) = rind(i);
                     transinds(curriminds(i)) = currtrans(tind(i));
-                end
-                
+                end                
+            %end % debug   
             else % if distributor is used
                 in_split = struct('numst', numst, 'currtrans', currtrans, 'curriminds', curriminds, ...
                     'onesprojc', onesprojc, 'currprojcoeffs', currprojcoeffs, 'ic', ic, ...
@@ -147,9 +149,10 @@ for c = 1:numctf
                 rind = zeros(1,numcurrim);
                 tind = zeros(1,numcurrim);
                 for i = 1:numcurrim
-                    [val, ind] = min(minvalues(:,i));
-                    SSDs(curriminds(i)) = val;
-                    minind = minindices(ind,i);
+                    val = minvalues(i);
+                    minind = minindices(i);
+                    SSDs(curriminds(i)) = val; %val;                    
+                    
                     [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
                     projinds(curriminds(i)) = inds(pind(i));
                     rotinds(curriminds(i)) = rind(i);

@@ -17,7 +17,18 @@ for i=1:ncluster
     minindices(i,:) = minidc;
     minvalues(i,:) = minval;
 end
-out = struct('minindices', minindices, 'minvalues', minvalues);
+
+minindices_glo = zeros(1,numcurrim);
+minvalues_glo = zeros(1,numcurrim);
+for i=1:numcurrim
+    [val, ind_loc] = min(minvalues(:,i));
+    minind_loc = minindices(ind_loc,i);
+    [p_loc, r_loc, t_loc] = ind2sub([numprojc, numrot/ncluster, numst], minind_loc);
+    %idc_glo = p_loc + numprojc * (r_loc*ind_loc - 1) + ind_loc * numrot * r_loc * numprojc * (t_loc - 1);
+    minindices_glo(i) = sub2ind([numprojc, numrot, numst], p_loc, r_loc + (ind_loc-1)*ceil(numrot/ncluster), t_loc);
+    minvalues_glo(i) = val;
+end
+out = struct('minindices', minindices_glo, 'minvalues', minvalues_glo);
 
 %  for i = 1:numcurrim
 %      [val, ind] = min(minvalues(:,i));
@@ -31,4 +42,5 @@ out = struct('minindices', minindices, 'minvalues', minvalues);
 %  out = struct('pind', pind, 'rind', rind, 'tind', tind, ...
 %      'projinds', projinds, 'rotinds', rotinds, 'transinds', transinds, 'SSDs', SSDs);
 end
+
 
