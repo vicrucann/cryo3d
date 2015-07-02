@@ -76,4 +76,4 @@ sleeptime = 10;
 
 % folder name where results will be copied to
 resfold = [pathout 'result_distr'];
-printout = 1;
+printout = 0;
