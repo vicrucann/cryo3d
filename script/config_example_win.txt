@@ -4,13 +4,13 @@ pathout = 'G:\workspace\db-hongwei\dselected_1\';
 pathdata = 'G:\20150205_sdp\';
 caching = -1; % 1 for caching on, 0 caching off, -1 automatic caching
 pathcache = 'G:\workspace\db-hongwei\dselected_1\cache\';
-dtheta = 3;
+dtheta = 12;
 
 maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
 maxmem = 30624;
 
-numthreads = 12;
-rotstep = 1;
+numthreads = 6;
+rotstep = 6;
 transmax = 4;
 
 %% Preprocessing
@@ -57,8 +57,8 @@ alignims = 1; % 0 or 1, save aligned images or not
 %% Bash distributer parameters
 
 % list of IP addresses
-%ipaddrs = [];
-ipaddrs = ['130.132.104.236' ' ' '172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.77'];
+ipaddrs = [];
+%ipaddrs = ['130.132.104.236' ' ' '172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.77'];
 
 % login id which will be used to access the remotes (same for all remotes)
 login = 'cryo';

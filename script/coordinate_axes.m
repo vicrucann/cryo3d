@@ -19,7 +19,7 @@ if nargin < 2
     return;
 end
 
-addpath(fullfile(cd, '../src/best_match'));
+addpath(fullfile(cd, '../src/recon'));
 coord_axes = create_approx_uniform_axes_whole_sphere(dtheta,disp_flag,fig_num);
 outfile = [pathout 'coord_axes_' num2str(dtheta) '.mat'];
 save(outfile, 'coord_axes');
