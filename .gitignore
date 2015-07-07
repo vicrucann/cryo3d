@@ -11,4 +11,5 @@
 *.orig
 *~
 *.swap
+*.swp
 *.out

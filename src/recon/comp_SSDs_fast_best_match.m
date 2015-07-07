@@ -18,6 +18,20 @@ currmem = monitor_memory_whos;
 minscale = 1.0;
 maxscale = 1.0;
 
+% initialize distributor if needed
+addpath(fullfile(cd, '../src/dist-wrappers'));
+addpath(fullfile(cd, '../src/rshell-mat'));
+path_vars = pathout;
+currfold = pwd; 
+cd('../src/rshell-mat/'); path_curr = pwd; path_curr = fixslash(path_curr);
+cd(currfold);
+debug = 1;
+
+d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_curr, sleeptime, path_res, printout);
+if (d.ncluster > 1)
+    d.scp_cached_data(ips);
+end
+
 % For each CTF class
 for c = 1:numctf
     
@@ -65,14 +79,12 @@ for c = 1:numctf
             numcurrim = length(curriminds);
             
             % Setup ssds matrix, rep proj norms, and get current imcoeffs
-            ssds = inf(numprojc,numcurrim,numrot,numst,'single');
             currprojnorms = projnormsc(:,ones(numcurrim,1));
             ic = imcoeffs(curriminds,:)';
             
-            % if using distributor, break data
-            [ncluster ~] = find(ipaddrs==' ');
-            ncluster = size(ncluster,2)+1;
-            if ncluster == 1 % if distributor is not used
+            if d.ncluster == 1 % if distributor is not used
+                sum_currips = zeros(numrot, numst); % debug
+                ssds = inf(numprojc,numcurrim,numrot,numst,'single');
                 % For each rotation
                 for r = 1:numrot
                     % For each translation in the current search set
@@ -91,6 +103,7 @@ for c = 1:numctf
                         % projections and current images
                         %currips = currprojcoeffs*(ips.read_cached_array([0,0,r,currt])*ic);
                         currips = currprojcoeffs*(ips(:,:,r,currt)*ic);
+                        sum_currips(r,t) = sum(sum(currips)); % debug, control sum!
                         
                         %                   % Calculate scale and adjust
                         s = currips ./ currprojnorms / 2;
@@ -115,47 +128,31 @@ for c = 1:numctf
                     projinds(curriminds(i)) = inds(pind(i));
                     rotinds(curriminds(i)) = rind(i);
                     transinds(curriminds(i)) = currtrans(tind(i));
-                end
-                
+                end                   
             else % if distributor is used
-                addpath(fullfile(cd, '../src/dist-wrappers'));
-                addpath(fullfile(cd, '../src/rshell-mat'));
-                fprintf('\nCalculation using remotes\n');
-                
-                currfold = pwd; cd('../src/rshell-mat/');
-                path_curr = pwd; path_curr = fixslash(path_curr);
-                cd(currfold); cd('../src/best_match/');
-                srcfold = pwd; srcfold = fixslash(srcfold);
-                cd(currfold);
-                pathsrc = srcfold;
-                path_vars = pathout;
-                
-                path_cache = ips.window.cpath;
-                cachevar = ips.window.vname;
-                d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_cache, cachevar,...
-                    path_curr, sleeptime, path_res, printout);
                 in_split = struct('numst', numst, 'currtrans', currtrans, 'curriminds', curriminds, ...
                     'onesprojc', onesprojc, 'currprojcoeffs', currprojcoeffs, 'ic', ic, ...
                     'currprojnorms', currprojnorms, 'minscale', minscale, 'maxscale', maxscale, ...
                     'imnorms', imnorms, 'numprojc', numprojc, 'numcurrim', numcurrim, 'numrot', numrot, ...
-                    'broken', ips.ibroken(), 'dimensions', ips.dimension(), 'ctype', ips.type(), ...
+                    'broken', ips.ibroken(), 'dimensions', ips.dimension(), 'ctype', ips.type(), 'volume', ips.window.volume,...
                     'ncluster', d.ncluster, 'path_vars', path_vars, 'vars', vars);
                 in_merge = struct('ncluster', d.ncluster, 'numcurrim', numcurrim, 'path_res', path_res, ...
-                    'vars', vars, 'numim', numim, 'curriminds', curriminds, ...
-                    'numprojc', numprojc, 'numrot', numrot, 'numst', numst, 'currtrans', currtrans,...
+                    'vars', vars, 'numprojc', numprojc, 'numrot', numrot, 'numst', numst, 'currtrans', currtrans,...
                     'inds', inds);
                 
                 out = d.launch(@ssd_split, in_split, @ssd_wrap, @ssd_merge, in_merge);
                 minindices = out.minindices;
                 minvalues = out.minvalues;
+                
                 % For each image in the batch
                 pind = zeros(1,numcurrim);
                 rind = zeros(1,numcurrim);
                 tind = zeros(1,numcurrim);
                 for i = 1:numcurrim
-                    [val, ind] = min(minvalues(:,i));
-                    SSDs(curriminds(i)) = val;
-                    minind = minindices(ind,i);
+                    val = minvalues(i);
+                    minind = minindices(i);
+                    SSDs(curriminds(i)) = val;                    
+                    
                     [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
                     projinds(curriminds(i)) = inds(pind(i));
                     rotinds(curriminds(i)) = rind(i);

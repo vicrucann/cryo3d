@@ -1,17 +1,33 @@
-function output = ssd_wrap( file_mat, res_fname, file_dat )
+function output = ssd_wrap( file_mat, res_fname, cache_vname, ncache )
 %UNTITLED7 Summary of this function goes here
 %   Detailed explanation goes here
 
 fprintf('The mat file provided: %s\n', file_mat);
 load(file_mat);
 
-assert(sum(file_dat~='0')>0, 'Error while checking file_dat: format is not correct\n');
-fprintf('The dat file provided: %s\n', file_dat);
+vol = in.volume(in.broken);
+nvol = ceil(in.dimensions(in.broken) / vol);
+vol_end = in.dimensions(in.broken) - (nvol-1)*vol;
+dims = in.volume;
+
+fprintf('The broken dimension of ips has size of %i or %i\n', vol, vol_end);
+fprintf('dims=%i %i %i %i\n', dims(1), dims(2), dims(3), dims(4));
+idxc = ceil(r_begin/vol);
+idxc_end = ceil(r_end/vol);
+fprintf('idxc=%i, idxc_end=%i\n', idxc, idxc_end);
+file_dat = [cache_vname int2str(idxc) '.dat'];
 mm = memmapfile(file_dat, 'Format', in.ctype);
+
+if (idxc == idxc_end)
+    vol=vol_end;
+    dims(in.broken) = vol_end;
+end
+
 ipsi = reshape(mm.Data, dims);
+clear mm;
 fprintf('Dat file is read\n');
 
-ssdi = inf(in.numprojc, in.numcurrim, r_end - r_begin, in.numst,'single');
+ssdi = inf(in.numprojc, in.numcurrim, r_end - r_begin + 1, in.numst,'single');
 
 fprintf('The calculation loop for r in range [%i %i] and t in range [%i %i]\n', r_begin, r_end, 1, in.numst);
 for r = r_begin:r_end
@@ -25,8 +41,27 @@ for r = r_begin:r_end
         currimnorms = in.imnorms(currt,in.curriminds);
         currimnorms = currimnorms(in.onesprojc,:);
         % First calculate the inner products between
-        % projections and current images
-        currips = in.currprojcoeffs*(ipsi(:, :, r - r_begin + 1, currt) * in.ic);
+        % projections and current images        
+        idxc_ = ceil(r/vol);
+        if (idxc ~= idxc_) % memmapfile the next file
+            idxc = idxc_;
+            if (idxc == idxc_end)
+                vol = vol_end;
+                dims(in.broken) = vol_end;
+            end
+            fprintf('idxc=%i, r=%i, vol=%i\n', idxc, r, vol);
+            file_dat = [cache_vname int2str(idxc) '.dat'];
+            mm = memmapfile(file_dat, 'Format', in.ctype);
+            ipsi = reshape(mm.Data, dims);
+            fprintf('Dat file is read\n');
+        end
+        
+        r_idx_loc = mod(r, vol);
+        if (r_idx_loc == 0)
+            r_idx_loc = vol;
+        end
+        
+        currips = in.currprojcoeffs*(ipsi(:, :, r_idx_loc, currt) * in.ic);
         
         % Calculate scale and adjust
         s = currips ./ in.currprojnorms / 2;

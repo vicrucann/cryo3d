@@ -10,7 +10,7 @@ maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
 maxmem = 30624;
 
 numthreads = 12;
-rotstep = 1.5;
+rotstep = 1;
 transmax = 4;
 
 %% Preprocessing
@@ -57,24 +57,24 @@ alignims = 1; % 0 or 1, save aligned images or not
 %% Bash distributer parameters
 
 % list of IP addresses
-ipaddrs = [];
-%ipaddrs = ['130.132.104.236' ' ' '172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.77'];
+%ipaddrs = [];
+ipaddrs = ['130.132.104.236' ' ' '172.21.9.92' ' ' '172.23.2.105' ' ' '172.23.5.77'];
 
 % login id which will be used to access the remotes (same for all remotes)
 login = 'cryo';
 
 % workplace directory on remotes (same for all remotes)
-ppath = '/home/cryo/dop';
+ppath = '/home/cryo/test_cryo3d';
 
 % function matlab name that will be launched on remotes
 remmat = 'mandelbrot';
 
 % variable name where all the data will be saved to (in pathout folder)
-varmat = 'mnd';
+varmat = 'ssd_fbm';
 
-% pause interval (will be run 50 times)
-sleeptime = 5;
+% pause interval (will be run 1000 times)
+sleeptime = 10;
 
 % folder name where results will be copied to
-resfold = [pathout 'dres'];
-printout = 0;
+resfold = [pathout 'result_distr'];
+printout = 1;
