@@ -27,7 +27,7 @@ ipsi = reshape(mm.Data, dims);
 clear mm;
 fprintf('Dat file is read\n');
 
-ssdi = inf(in.numprojc, in.numcurrim, r_end - r_begin, in.numst,'single');
+ssdi = inf(in.numprojc, in.numcurrim, r_end - r_begin + 1, in.numst,'single');
 
 fprintf('The calculation loop for r in range [%i %i] and t in range [%i %i]\n', r_begin, r_end, 1, in.numst);
 for r = r_begin:r_end

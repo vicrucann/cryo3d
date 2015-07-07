@@ -1,16 +1,16 @@
 %% Most frequntly edited parameters:
 
-pathout = '/home/vicru/temp/1/';
+pathout = '/home/vicru/temp/3/';
 pathdata = '/home/vicru/data/';
 caching = -1; % 1 for caching on, 0 caching off, -1 automatic caching
-pathcache = '/home/vicru/temp/1/cache/';
-dtheta = 12;
+pathcache = '/home/vicru/temp/3/cache/';
+dtheta = 3;
 
 maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
 maxmem = 50624;
 
 numthreads = 18;
-rotstep = 6;
+rotstep = 1;
 transmax = 4;
 
 %% Preprocessing

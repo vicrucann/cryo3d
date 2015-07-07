@@ -4,8 +4,6 @@ function out = ssd_merge( in )
 
 ncluster = in.ncluster;
 numcurrim = in.numcurrim;
-numim = in.numim;
-curriminds = in.curriminds;
 numprojc = in.numprojc;
 numrot = in.numrot;
 numst = in.numst;
@@ -36,17 +34,6 @@ for i=1:numcurrim
 end
 out = struct('minindices', minindices_glo, 'minvalues', minvalues_glo);
 
-%  for i = 1:numcurrim
-%      [val, ind] = min(minvalues(:,i));
-%      SSDs(curriminds(i)) = val;
-%      minind = minindices(ind,i);
-%      [pind(i),rind(i),tind(i)] = ind2sub([numprojc,numrot,numst],minind);
-%      projinds(curriminds(i)) = in.inds(pind(i));
-%      rotinds(curriminds(i)) = rind(i);
-%      transinds(curriminds(i)) = in.currtrans(tind(i));
-%  end
-%  out = struct('pind', pind, 'rind', rind, 'tind', tind, ...
-%      'projinds', projinds, 'rotinds', rotinds, 'transinds', transinds, 'SSDs', SSDs);
 end
 
 
