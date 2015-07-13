@@ -3,8 +3,11 @@ function output = ssd_wrap( file_mat, res_fname, cache_vname, ncache )
 %   Detailed explanation goes here
 
 fprintf('The mat file provided: %s\n', file_mat);
+t_load = tic;
 load(file_mat);
+toc(t_load);
 
+tic;
 vol = in.volume(in.broken);
 nvol = ceil(in.dimensions(in.broken) / vol);
 vol_end = in.dimensions(in.broken) - (nvol-1)*vol;
@@ -26,7 +29,9 @@ end
 ipsi = reshape(mm.Data, dims);
 clear mm;
 fprintf('Dat file is read\n');
+toc;
 
+tic;
 ssdi = inf(in.numprojc, in.numcurrim, r_end - r_begin + 1, in.numst,'single');
 
 fprintf('The calculation loop for r in range [%i %i] and t in range [%i %i]\n', r_begin, r_end, 1, in.numst);
@@ -72,6 +77,9 @@ for r = r_begin:r_end
     end
 end
 fprintf('loop-1 terminated\n');
+toc;
+
+tic;
 minidc = zeros(1,in.numcurrim);
 minval = zeros(1,in.numcurrim);
 for i = 1:in.numcurrim
@@ -79,6 +87,10 @@ for i = 1:in.numcurrim
     [minval(i), minidc(i)] = min(currssdi(:));
 end
 fprintf('loop-2 terminated\n');
+toc;
+
+tic;
 save(res_fname, 'minval', 'minidc');
 fprintf('output variable saved\n');
+toc;
 end

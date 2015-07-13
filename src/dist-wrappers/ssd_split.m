@@ -18,7 +18,10 @@ for i=1:ncluster
         r_end = numrot;
         dims(in.broken)=numrot_l;
     end
+    %fprintf('Saving split data\n');
+    %t_save = tic;
     save([in.path_vars in.vars int2str(i) '.mat'], 'r_begin', 'r_end', 'dims', 'in');
+    %toc(t_save);
 end
 output = 1;
 end

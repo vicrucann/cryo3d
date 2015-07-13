@@ -25,7 +25,6 @@ path_vars = pathout;
 currfold = pwd; 
 cd('../src/rshell-mat/'); path_curr = pwd; path_curr = fixslash(path_curr);
 cd(currfold);
-debug = 1;
 
 d = Distributor(login, path_rem, ipaddrs, path_vars, vars, path_curr, sleeptime, path_res, printout);
 if (d.ncluster > 1)
@@ -86,6 +85,7 @@ for c = 1:numctf
                 sum_currips = zeros(numrot, numst); % debug
                 ssds = inf(numprojc,numcurrim,numrot,numst,'single');
                 % For each rotation
+                %t_loop1 = tic;
                 for r = 1:numrot
                     % For each translation in the current search set
                     for t = 1:numst
@@ -114,8 +114,11 @@ for c = 1:numctf
                         ssds(:,:,r,t) = currimnorms + s.^2.*currprojnorms - s.*currips;
                     end
                 end
+                %fprintf('loop1 is done\n');
+                %toc(t_loop1);
                 
                 % For each image in the batch
+                %t_loop2 = tic;
                 pind = zeros(1,numcurrim);
                 rind = zeros(1,numcurrim);
                 tind = zeros(1,numcurrim);
@@ -128,8 +131,11 @@ for c = 1:numctf
                     projinds(curriminds(i)) = inds(pind(i));
                     rotinds(curriminds(i)) = rind(i);
                     transinds(curriminds(i)) = currtrans(tind(i));
-                end                   
+                end      
+                %fprintf('loop2 is done\n');
+                %toc(t_loop2);
             else % if distributor is used
+                %t_loop1 = tic;
                 in_split = struct('numst', numst, 'currtrans', currtrans, 'curriminds', curriminds, ...
                     'onesprojc', onesprojc, 'currprojcoeffs', currprojcoeffs, 'ic', ic, ...
                     'currprojnorms', currprojnorms, 'minscale', minscale, 'maxscale', maxscale, ...
@@ -143,8 +149,11 @@ for c = 1:numctf
                 out = d.launch(@ssd_split, in_split, @ssd_wrap, @ssd_merge, in_merge);
                 minindices = out.minindices;
                 minvalues = out.minvalues;
+                %fprintf('loop1 and loop2 done\n');
+                %toc(t_loop1)
                 
                 % For each image in the batch
+                %t_loop3 = tic;
                 pind = zeros(1,numcurrim);
                 rind = zeros(1,numcurrim);
                 tind = zeros(1,numcurrim);
@@ -158,9 +167,12 @@ for c = 1:numctf
                     rotinds(curriminds(i)) = rind(i);
                     transinds(curriminds(i)) = currtrans(tind(i));
                 end
+                %fprintf('loop3 is done\n');
+                %toc(t_loop3)
             end
             
             % to calculate scales, need to sort by rind so that to have sequensial access to ips
+            %t_loop4 = tic;
             [s_rind, i_rind] = sort(rind);
             s_pind = pind(i_rind);
             s_tind = tind(i_rind);
@@ -169,7 +181,8 @@ for c = 1:numctf
                 scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:) * ips(:,:,s_rind(i),currtrans(s_tind(i)))  *...
                     imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2;
             end
-            
+            %fprintf('loop4 is done\n');
+            %toc(t_loop4);
             clear ssds currssds currprojnorms ic currimnorms
         end
         progress_bar(st, numstu);

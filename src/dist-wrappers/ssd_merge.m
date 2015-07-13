@@ -10,11 +10,14 @@ numst = in.numst;
 
 minindices = zeros(ncluster,numcurrim);
 minvalues = zeros(ncluster,numcurrim);
+%fprintf('Loading merged data\n');
+%t_load = tic;
 for i=1:ncluster
     load([in.path_res '/' 'result_' in.vars int2str(i) '.mat']);
     minindices(i,:) = minidc;
     minvalues(i,:) = minval;
 end
+%toc(t_load);
 
 minindices_glo = zeros(1,numcurrim);
 minvalues_glo = zeros(1,numcurrim);
