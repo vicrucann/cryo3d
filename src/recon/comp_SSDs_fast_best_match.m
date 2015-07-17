@@ -11,7 +11,7 @@ projinds = -ones(numim,1);
 rotinds = zeros(numim,1);
 SSDs = zeros(numim,1);
 transinds = zeros(numim,1);
-scales = zeros(numim,1);
+scales = ones(numim,1);
 numst = size(searchtrans,1);
 searchtrans = searchtrans';
 currmem = monitor_memory_whos;
@@ -52,6 +52,10 @@ for c = 1:numctf
         
         % Determine number of images to process per batch for handling limited memory
         numsinds = length(sinds);
+        if d.ncluster > 1
+            maxmem = d.ncluster * 50550;
+            currmem = 0;
+        end
         numbatches = ceil((numprojc*numsinds*numrot*numst + numprojc*numrot*numst)*4/1048576 / (maxmem - currmem - 550));
         if numbatches < 1
             numbatches = numsinds;
@@ -172,17 +176,16 @@ for c = 1:numctf
             end
             
             % to calculate scales, need to sort by rind so that to have sequensial access to ips
-            %t_loop4 = tic;
-            [s_rind, i_rind] = sort(rind);
-            s_pind = pind(i_rind);
-            s_tind = tind(i_rind);
-            s_curriminds = curriminds(i_rind);
-            for i = 1:numcurrim
-                scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:) * ips(:,:,s_rind(i),currtrans(s_tind(i)))  *...
-                    imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2;
-            end
-            %fprintf('loop4 is done\n');
-            %toc(t_loop4);
+            
+%             [s_rind, i_rind] = sort(rind);
+%             s_pind = pind(i_rind);
+%             s_tind = tind(i_rind);
+%             s_curriminds = curriminds(i_rind);
+%             for i = 1:numcurrim
+%                 scales(s_curriminds(i)) = currprojcoeffs(s_pind(i),:) * ips(:,:,s_rind(i),currtrans(s_tind(i)))  *...
+%                     imcoeffs(s_curriminds(i),:)' / projnormsc(s_pind(i))/2;
+%             end
+
             clear ssds currssds currprojnorms ic currimnorms
         end
         progress_bar(st, numstu);
@@ -190,8 +193,8 @@ for c = 1:numctf
     fprintf('\n');
 end
 
-scales(scales < minscale) = minscale;
-scales(scales > maxscale) = maxscale;
+%scales(scales < minscale) = minscale;
+%scales(scales > maxscale) = maxscale;
 end
 
 function foldname = fixslash(foldname)
