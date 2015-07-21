@@ -228,16 +228,51 @@ for run = 1:numruns
         clear temp;
         toc;
         
-        % Compute inner products
-        disp('Calc inner products'); pause(0.05); tic;
-        ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache, ipaddrs);
-        toc;
+        % prepare distributor variables to initialize with
+        addpath(fullfile(cd, '../src/dist-wrappers'));
+        addpath(fullfile(cd, '../src/rshell-mat'));
+        path_vars = pathout;
+        currfold = pwd;
+        cd('../src/rshell-mat/'); path_curr = pwd;
+        cd(currfold);
+        ips_vars = 'ips_calc_test';
         
-        % Calculate the SSDs to find best projection direction and
-        % transformation params
-        disp('Calc SSDs'); pause(0.05);time_SSDs = tic;
-        [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
-            ipaddrs,login,ppath,varmat,sleeptime,resfold,printout,pathout);
+        % initialize distributor
+        d = Distributor(login, ppath, ipaddrs, path_vars, ips_vars, path_curr, sleeptime, resfold, printout);
+        if (d.ncluster > 1)
+            % prepare split and merge data
+            in_split = struct('ncluster', d.ncluster, 'path_vars', path_vars, 'vars', ips_vars, ...
+                'projbasis', projbasis, 'imbasis', imbasis, 'rots', rots, 'numprojcoeffs', numprojcoeffs, ...
+                'numpixsqrt', numpixsqrt, 'numpix', numpix, 'trans', trans, 'searchtrans', searchtrans, ...
+                'numtrans', numtrans, 'numrot', numrot, 'numimcoeffs', numimcoeffs, ...
+                'pathcache', ppath, 'caching', caching, ...
+                'projnorms', projnorms, 'projcoeffs', projcoeffs ,'imcoeffs', imcoeffs, ...
+                'ctfinds', ctfinds,'numim', numim, 'numctf', numctf, 'numproj', numproj, ...
+                'imnorms', imnorms);
+            in_merge = struct('ncluster', d.ncluster, 'vars', ips_vars, 'path_res', resfold, 'numim', numim);
+            
+            % copy any necessary functions to run the wrapper
+            d.scp_function(@CachedNDArray);
+            d.scp_function(@SlidingWindow);
+            d.scp_function(@get_fname);
+            d.scp_function(@get_nchunks);
+            d.scp_function(@progress_bar);
+            
+            % launch distributor - run split, kernel and merge
+            out = d.launch(@ips_ssd_split, in_split, @ips_ssd_wrap, @ips_ssd_merge, in_merge);
+        else
+            % Compute inner products
+            disp('Calc inner products'); pause(0.05); tic;
+            ips = comp_inner_prods(projbasis,imbasis,rots,numprojcoeffs,numrot,numimcoeffs,numpixsqrt,numpix,trans,searchtrans,numtrans, caching, pathcache, ipaddrs);
+            toc;
+            
+            % Calculate the SSDs to find best projection direction and
+            % transformation params
+            disp('Calc SSDs'); pause(0.05);time_SSDs = tic;
+            [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
+                ipaddrs,login,ppath,varmat,sleeptime,resfold,printout,pathout);
+        end
+        
         toc(time_SSDs);
         ssdtime = toc(ssdtime);
         ssdtimes(n) = ssdtime;
