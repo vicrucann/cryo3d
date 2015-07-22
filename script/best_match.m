@@ -279,8 +279,8 @@ for run = 1:numruns
             % Calculate the SSDs to find best projection direction and
             % transformation params
             disp('Calc SSDs'); pause(0.05);time_SSDs = tic;
-            [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
-                ipaddrs,login,ppath,varmat,sleeptime,resfold,printout,pathout);
+            [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,...
+                numctf,numproj,numrot,searchtrans,imnorms,maxmem);
             toc(time_SSDs);
         end
         
