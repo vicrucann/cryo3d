@@ -124,7 +124,7 @@ maxscale = 1.0;
 
 maxmem = 105000;
 
-for c = 1:numctf
+for c = 1:in.numctf
     
     % Get the relevant indices and norms for the current CTF
     inds = c:in.numctf:in.numproj;
@@ -133,6 +133,11 @@ for c = 1:numctf
     projnormsc = in.projnorms(inds);
     currprojcoeffs = in.projcoeffs(inds,:);
     cis = find(in.ctfinds == c)';
+    %fprintf('size of ctfinds: [%d %d]\n', size(in.ctfinds,1), size(in.ctfinds,2));
+    %fprintf('size of cis: [%d %d]\n', size(cis,1), size(cis,2)); %debug
+    %fprintf('max and min: [%d %d]\n', max(cis), min(cis));
+    fprintf('size of searchtrans: [%d %d]\n', size(searchtrans,1), size(searchtrans,2));
+    
     searchtransu = unique(searchtrans(cis,:),'rows');
     numstu = size(searchtransu,1);
    

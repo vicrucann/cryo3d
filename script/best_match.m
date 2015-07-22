@@ -241,6 +241,8 @@ for run = 1:numruns
         d = Distributor(login, ppath, ipaddrs, path_vars, ips_vars, path_curr, sleeptime, resfold, printout);
         if (d.ncluster > 1)
             % prepare split and merge data
+            fprintf('Calc IPS and SSD\n');
+            t_ips_ssd = tic;
             in_split = struct('ncluster', d.ncluster, 'path_vars', path_vars, 'vars', ips_vars, ...
                 'projbasis', projbasis, 'imbasis', imbasis, 'rots', rots, 'numprojcoeffs', numprojcoeffs, ...
                 'numpixsqrt', numpixsqrt, 'numpix', numpix, 'trans', trans, 'searchtrans', searchtrans, ...
@@ -260,6 +262,14 @@ for run = 1:numruns
             
             % launch distributor - run split, kernel and merge
             out = d.launch(@ips_ssd_split, in_split, @ips_ssd_wrap, @ips_ssd_merge, in_merge);
+            fprintf('IPS and SSD calc done\n');
+            projinds = out.projinds;
+            rotinds = out.rotinds;
+            SSDs = out.SSDs;
+            transinds = out.transinds;
+            scales = out.scales;
+            clear out;
+            toc(t_ips_ssd);
         else
             % Compute inner products
             disp('Calc inner products'); pause(0.05); tic;
@@ -271,9 +281,9 @@ for run = 1:numruns
             disp('Calc SSDs'); pause(0.05);time_SSDs = tic;
             [projinds,rotinds,SSDs,transinds,scales] = comp_SSDs_fast_best_match(projnorms,projcoeffs,imcoeffs,ips,ctfinds,numim,numctf,numproj,numrot,searchtrans,imnorms,maxmem,...
                 ipaddrs,login,ppath,varmat,sleeptime,resfold,printout,pathout);
+            toc(time_SSDs);
         end
         
-        toc(time_SSDs);
         ssdtime = toc(ssdtime);
         ssdtimes(n) = ssdtime;
         notssdtime = tic;

@@ -1,16 +1,16 @@
 %% Most frequntly edited parameters:
 
-pathout = '/home/vicru/temp/6/';
+pathout = '/home/vicru/temp/12/';
 pathdata = '/home/vicru/data/';
 caching = -1; % 1 for caching on, 0 caching off, -1 automatic caching
-pathcache = '/home/vicru/temp/6/cache/';
-dtheta = 6;
+pathcache = '/home/vicru/temp/12/cache/';
+dtheta = 12;
 
 maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
 maxmem = 50624;
 
 numthreads = 12;
-rotstep = 3;
+rotstep = 6;
 transmax = 4;
 
 %% Preprocessing
@@ -72,8 +72,8 @@ remmat = 'comp_SSDs_fast_best_match_wrapper';
 varmat = 'ssd_fbm';
 
 % pause interval (will be run 50 times)
-sleeptime = 10;
+sleeptime = 5;
 
 % folder name where results will be copied to
 resfold = [pathout 'result_distr'];
-printout = 1;
+printout = 0;
