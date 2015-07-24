@@ -122,7 +122,7 @@ currmem = 0; %monitor_memory_whos;
 minscale = 1.0;
 maxscale = 1.0;
 
-maxmem = 105000;
+maxmem = 38000;
 
 for c = 1:in.numctf
     
@@ -179,6 +179,8 @@ for c = 1:in.numctf
             
             sum_currips = zeros(in.numrot, numst); % debug
             ssds = inf(numprojc,numcurrim,in.numrot,numst,'single');
+            %ssds = CachedNDArray([numprojc,numcurrim,in.numrot,numst],...
+            %    'single', 3, 'ssds', in.pathcache, 4, -1, 1, inf);
             
             % For each rotation
             %t_loop1 = tic;

@@ -7,7 +7,7 @@ pathcache = '/home/vicru/temp/12/cache/';
 dtheta = 12;
 
 maskfile = [pathdata 'mask-0031-ds2-0803.mrc']; % [] for no maskfile
-maxmem = 50624;
+maxmem = 38624;
 
 numthreads = 12;
 rotstep = 6;

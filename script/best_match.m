@@ -22,6 +22,27 @@ addpath(fullfile(cd, '../src/mrc'));
 %addpath(fullfile(cd, '../src/caching'));
 addpath(fullfile(cd, '../src/cacharr'));
 
+% prepare distributor variables to initialize with
+addpath(fullfile(cd, '../src/dist-wrappers'));
+addpath(fullfile(cd, '../src/rshell-mat'));
+path_vars = pathout;
+currfold = pwd;
+cd('../src/rshell-mat/'); path_curr = pwd;
+cd(currfold);
+ips_vars = 'ips_calc_test';
+
+% initialize distributor
+d = Distributor(login, ppath, ipaddrs, path_vars, ips_vars, path_curr, sleeptime, resfold, printout);
+if (d.ncluster>1)
+    % copy any necessary functions to run the wrapper
+    d.scp_function(@CachedNDArray);
+    d.scp_function(@SlidingWindow);
+    d.scp_function(@get_fname);
+    d.scp_function(@get_nchunks);
+    d.scp_function(@progress_bar);
+end
+
+
 % Stuff for timing
 totaltime = tic;
 
@@ -215,6 +236,7 @@ for run = 1:numruns
     wallitertimes = zeros(1,maxnumiter);
     ssdtimes = zeros(1,maxnumiter);
     itertimes = zeros(1,maxnumiter);
+    
     for n = 1:maxnumiter
         
         itertime = tic;
@@ -228,17 +250,6 @@ for run = 1:numruns
         clear temp;
         toc;
         
-        % prepare distributor variables to initialize with
-        addpath(fullfile(cd, '../src/dist-wrappers'));
-        addpath(fullfile(cd, '../src/rshell-mat'));
-        path_vars = pathout;
-        currfold = pwd;
-        cd('../src/rshell-mat/'); path_curr = pwd;
-        cd(currfold);
-        ips_vars = 'ips_calc_test';
-        
-        % initialize distributor
-        d = Distributor(login, ppath, ipaddrs, path_vars, ips_vars, path_curr, sleeptime, resfold, printout);
         if (d.ncluster > 1)
             % prepare split and merge data
             fprintf('Calc IPS and SSD\n');
@@ -253,13 +264,6 @@ for run = 1:numruns
                 'imnorms', imnorms);
             in_merge = struct('ncluster', d.ncluster, 'vars', ips_vars, 'path_res', resfold, 'numim', numim);
             
-            % copy any necessary functions to run the wrapper
-            d.scp_function(@CachedNDArray);
-            d.scp_function(@SlidingWindow);
-            d.scp_function(@get_fname);
-            d.scp_function(@get_nchunks);
-            d.scp_function(@progress_bar);
-            
             % launch distributor - run split, kernel and merge
             out = d.launch(@ips_ssd_split, in_split, @ips_ssd_wrap, @ips_ssd_merge, in_merge);
             fprintf('IPS and SSD calc done\n');
@@ -269,7 +273,9 @@ for run = 1:numruns
             transinds = out.transinds;
             scales = out.scales;
             clear out;
+            d.print_timestats();
             toc(t_ips_ssd);
+            
         else
             % Compute inner products
             disp('Calc inner products'); pause(0.05); tic;
