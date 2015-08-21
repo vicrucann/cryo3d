@@ -18,6 +18,14 @@ To get the submodules (cacharr and rshell-mat):
 cd cryo3d
 git submodule update --init --recursive
 ```
+When planning to edit (and then push back to the github) any of the submodules, checkout to the master branch for each of the submodules:  
+```
+cd src/rshell-mat
+git checkout master
+cd ..
+cd cacharr
+git checkout master
+```
 
 ### Running the whole pipeline
 
