@@ -9,9 +9,8 @@
 % fitflag = 1; Flag (0/1) to run ctfit2 to get ctf parameters
 % saveflag = 1; Flag (0/1) to save the ctf parameters and images in .mat
 
-function passed = fit_ctfs(pathout, paramfile, stackfile, num_clusters, ds, fitflag, saveflag)
+function ctffile = fit_ctfs(pathout, paramfile, stackfile, num_clusters, ds, fitflag, saveflag)
 
-passed = 0;
 if (nargin < 7)
     saveflag = 1;
 end
@@ -190,5 +189,4 @@ if saveflag
     end
     save([pathout savename],'ctfs','ctfParams','ctfinds');
 end
-
-passed = 1;
+ctffile = [pathout savename '.mat'];

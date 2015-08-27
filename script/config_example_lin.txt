@@ -16,12 +16,14 @@ transmax = 4;
 %% Preprocessing
 
 structfile = [pathdata 'run1_class001.mrc']; %'run1_class001.mrc'];
-stackfile = [pathdata 'stackfile_selected_1.mrcs'];
-ctffile = [];
+stackfile = [pathdata 'stackfile_ds1.mrcs'];
+starfile = [pathdata 'run1_data.star'];
+num_clusters = 4;
 lpf = 30; % low-pass filter
 sigm = 1; % width of Gaussian
 ds_ini = 2; % downsampling of initial
 ds_img = 2; % image
+ds_clu = 2;
 
 %% Best Match
 
