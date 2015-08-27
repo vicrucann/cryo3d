@@ -40,4 +40,4 @@ git checkout master
 ```
 
 ### Author information
-All of function for fast best match method were written by Nicha Dvornek. The improvements like main framework organization, distributor package [rshell-mat]() and caching class [cacharr]() were written by Victoria Rudakova. For inquires on additional packages: vicrucann(at)gmail(dot)com. 
+All of function for fast best match method were written by Nicha Dvornek. The improvements like main framework organization, distributor package [rshell-mat](https://github.com/vicrucann/rshell-mat) and caching class [cacharr](https://github.com/vicrucann/cacharr) were written by Victoria Rudakova. For inquires on additional packages: vicrucann(at)gmail(dot)com. 
