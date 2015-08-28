@@ -2,6 +2,9 @@
 *.mat
 *.mrc
 *.dat
+*.mrcs
+*.star
+_config_bm.txt
 
 # Ignore any temporary files
 *.asv
