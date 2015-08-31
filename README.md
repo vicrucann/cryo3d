@@ -11,20 +11,20 @@
 
 To download the source code of the pipeline, run the following commands:  
 ```
-path $ git clone https://github.com/vicrucann/cryo3d
+path $                          git clone https://github.com/vicrucann/cryo3d
 ``` 
 To get the submodules (cacharr and rshell-mat):  
 ```
-path $ cd cryo3d
-path/cryo3d $ git submodule update --init --recursive
+path $                          cd cryo3d
+path/cryo3d $                   git submodule update --init --recursive
 ```
 When planning to edit (and then push back to the github) any of the submodules, checkout to the master branch for each of the submodules:  
 ```
-path $ cd cryo3d/src/rshell-mat
-path/cryo3d/src/rshell-mat $ git checkout master
-path/cryo3d/src/rshell-mat cd ..
-path/cryo3d/src $ cd cacharr
-path/cryo3d/src/cacharr $ git checkout master
+path $                          cd cryo3d/src/rshell-mat
+path/cryo3d/src/rshell-mat $    git checkout master
+path/cryo3d/src/rshell-mat $    cd ..
+path/cryo3d/src $               cd cacharr
+path/cryo3d/src/cacharr $       git checkout master
 ```
 
 ### Running the whole pipeline
