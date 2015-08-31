@@ -1,5 +1,5 @@
 function norms = get_norms(I_fft_ctf, mu_fft, map)
-N=size(I,3);
+N=size(I_fft_ctf,3);
 norms=zeros(1,N);
 mapped_k = I_fft_ctf(map);
 mu_fft_mapped = mu_fft(:,:,mapped_k);

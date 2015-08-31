@@ -14,9 +14,9 @@ I_fft=get_ffts(I);
 
 % get CTFs
 M=size(defocus, 2);
-ctfs=zeros(1,M);
+ctfs=zeros(size(I,1), size(I,2),M);
 for j=1:M
-    ctfs(j)=CTF(size(I,1),pixA,lambda,defocus(j)/1e4,0,B,ampContrast);
+    ctfs(:,:,j)=CTF(size(I,1),pixA,lambda,defocus(j)/1e4,0,B,ampContrast);
 end
 
 assert(N<=M, 'size(I,3) must be less or eq to size(defocus,2)');
