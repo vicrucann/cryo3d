@@ -63,7 +63,12 @@ pathcache = fixslash(pathcache);
 
 %% Preprocessing
 
-ctffile = fit_ctfs(pathout, eval(starfile), eval(stackfile), str2num(num_clusters), str2num(ds_clu));
+starfile = eval(starfile);
+if ~isempty(starfile)
+    ctffile = fit_ctfs(pathout, starfile, eval(stackfile), str2num(num_clusters), str2num(ds_clu));
+else
+    ctffile = [];
+end
 structfile = init_volume(pathout, eval(structfile), str2num(lpf), str2num(sigm), str2num(ds_ini));
 coordfile = coordinate_axes(pathout, str2num(dtheta));
 imfile = preprocess_images(pathout, eval(stackfile), ctffile, str2num(ds_img));
