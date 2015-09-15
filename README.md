@@ -1,4 +1,7 @@
 ### Short description  
+
+![View in Chimera of the result 3d structure](https://github.com/vicrucann/cryo3d/chimera-3dmasked.png)
+
 *cryo3d* is a matlab-based software that allows for fast 3D protein reconstruction based on cryogenic particle images. The software was developped at [Image Processing and Analysis Group](http://medicine.yale.edu/bioimaging/ipa/), Yale School of Medicine, Dept. of Diagnostic Radiology under supervision and with participation of **Prof. Hemant Tagare**. 
 
 ### The project structure  
